@@ -39,7 +39,7 @@
 ************************************************************
 * File name: Compilers.h
 * Compiler: MS Visual Studio 2022
-* Course: CST 8152 – Compilers, Lab Section: [011, 012]
+* Course: CST 8152 â€“ Compilers, Lab Section: [011, 012]
 * Assignment: A12, A22, A32.
 * Date: May 01 2023
 * Professor: Paulo Sousa
@@ -80,11 +80,11 @@ NOTE: Some types may not be directly used by your language,
 */
 
 
-/* TO_DO: Define your typedefs */
-typedef char			sofia_char;
-typedef char* sofia_string;
-typedef int				sofia_intg;
-typedef float			sofia_real;
+/* TO_DO: Define your typedefs */                    // THE TASK HERE IS TO MAKE SURE THAT YOUR CODE ARE SIMILARE TO PYTHON 
+                                                    // REMOVED : typdef int    int, 
+                                                   //  REMOVED : typedef float   float;
+typedef char			Cast_char;
+typedef char*           str;
 typedef void			sofia_void;
 
 typedef unsigned char	sofia_boln;
@@ -113,7 +113,7 @@ Main functions signatures
 (Code will be updated during next assignments)
 ------------------------------------------------------------
 */
-sofia_intg mainReader(sofia_intg argc, sofia_string* argv);
+int mainReader(int argc, str* argv);
 
 /* 
 TO_DO: Include later mainScaner (A22) and mainParser (A32)
