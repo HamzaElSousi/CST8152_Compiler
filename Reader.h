@@ -79,6 +79,16 @@ enum READER_MODE {
 /* Add your bit-masks constant definitions here - Defined for BOA */
 /* BITS                                (7654.3210) */
 #define READER_DEFAULT_FLAG 0x00 	/* (0000.0000)_2 = (000)_10 */
+
+/* Bit masks for buffer state flags*/
+#define FLAG_ERROR 0x10  /* BIT 4: Error flag (0001 0000) */
+#define FLAG_END 0x08  /* BIT 3: End of buffer flag (1000) */
+#define FLAG_REL 0x04  /* BIT 2: Reallocation memory flag (0100) */
+#define FLAG_EMP 0x02  /* BIT 1: Buffer empty flag (0010) */
+#define FLAG_FUL 0x01  /* BIT 0: Buffer full flag (0001) */
+
+#define BUFFER_EMPTY FLAG_EMP 
+
 /* TO_DO: BIT 3: END = End of buffer flag */
 /* TO_DO: BIT 2: REL = Rellocation memory flag */
 /* TO_DO: BIT 1: EMP = Buffer empty flag */

@@ -71,29 +71,40 @@
 *************************************************************
 */
 
-BufferPointer readerCreate(int size, int increment, int mode) {
-	BufferPointer readerPointer;
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Adjust the values according to parameters */
-	readerPointer = (BufferPointer)calloc(1, sizeof(Buffer));
-	if (!readerPointer)
-		return NULL;
-	readerPointer->content = (str)malloc(size);
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Initialize the histogram */
-	readerPointer->size = size;
-	readerPointer->increment = increment;
-	readerPointer->mode = mode;
-	/* TO_DO: Initialize flags */
-	/* TO_DO: The created flag must be signalized as EMP */
-	/* NEW: Cleaning the content */
-	if (readerPointer->content)
-		readerPointer->content[0] = READER_TERMINATOR;
-	readerPointer->position.wrte = 0;
-	readerPointer->position.mark = 0;
-	readerPointer->position.read = 0;
-	return readerPointer;
+BufferPointer readerCreate(int size, int increment, char mode) {
+    if (size <= 0 || increment < 0 || (mode != 'f' && mode != 'a' && mode != 'm')) {
+        // Invalid parameters
+        return NULL;
+    }
+
+    BufferPointer readerPointer = (BufferPointer)calloc(1, sizeof(Buffer));
+    if (!readerPointer) {
+        // Memory allocation failed
+        return NULL;
+    }
+
+    readerPointer->content = (char*)malloc(size * sizeof(char));
+    if (!readerPointer->content) {
+        // Memory allocation for buffer content failed
+        free(readerPointer); // Clean up previously allocated memory
+        return NULL;
+    }
+
+    // Initialize buffer properties
+    readerPointer->size = size;
+    readerPointer->increment = increment;
+    readerPointer->mode = mode;
+    readerPointer->flags = BUFFER_EMPTY; // Assume BUFFER_EMPTY is a flag indicating the buffer is empty
+
+    // The created flag must be signalized as EMPTY
+    // Cleaning the content is already handled by setting the first character to READER_TERMINATOR
+    readerPointer->position.wrte = 0;
+    readerPointer->position.mark = 0;
+    readerPointer->position.read = 0;
+
+    return readerPointer;
 }
+
 
 
 /*
@@ -112,39 +123,55 @@ BufferPointer readerCreate(int size, int increment, int mode) {
 *************************************************************
 */
 
-BufferPointer readerAddChar(BufferPointer const readerPointer, Cast_char ch) {
-	str tempReader = NULL;
-	int newSize = 0;
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Reset Realocation */
-	/* TO_DO: Test the inclusion of chars */
-	if (readerPointer->position.wrte * (int)sizeof(Cast_char) < readerPointer->size) {
-		/* TO_DO: This buffer is NOT full */
-	} else {
-		/* TO_DO: Reset Full flag */
+BufferPointer readerAddChar(BufferPointer const readerPointer, char ch) {
+	if (!readerPointer || !readerPointer->content) return NULL; // Defensive programming
+
+	// Check if buffer is full
+	if (readerPointer->flags & FLAG_FUL) return NULL;
+
+	// When buffer is about to be full and needs resizing
+	if (readerPointer->position.wrte >= readerPointer->size - 1) {
+		int newSize = 0;
 		switch (readerPointer->mode) {
-		case MODE_FIXED:
+		case MODE_FIXED: // Cannot expand
+			readerPointer->flags |= FLAG_FUL; // Set buffer as full
 			return NULL;
 		case MODE_ADDIT:
-			/* TO_DO: Adjust new size */
-			/* TO_DO: Defensive programming */
+			newSize = readerPointer->size + readerPointer->increment;
 			break;
 		case MODE_MULTI:
-			/* TO_DO: Adjust new size */
-			/* TO_DO: Defensive programming */
+			newSize = readerPointer->size * readerPointer->increment;
 			break;
-		default:
+		default: // Unsupported mode
 			return NULL;
 		}
-		/* TO_DO: New reader allocation */
-		/* TO_DO: Defensive programming */
-		/* TO_DO: Check Relocation */
+
+		char* newContent = (char*)realloc(readerPointer->content, newSize);
+		if (!newContent) {
+			readerPointer->flags |= FLAG_ERROR; // Set error flag
+			return NULL;
+		}
+
+		// Successfully reallocated
+		readerPointer->content = newContent;
+		readerPointer->size = newSize;
+		readerPointer->flags &= ~FLAG_FUL; // Clear full flag
+		readerPointer->flags |= FLAG_REL; // Set reallocation flag
 	}
-	/* TO_DO: Add the char */
+
+	// Add character to buffer
 	readerPointer->content[readerPointer->position.wrte++] = ch;
-	/* TO_DO: Updates histogram */
+	readerPointer->flags &= ~FLAG_EMP; // Buffer is not empty
+
+	// Check if buffer is now full after adding
+	if (readerPointer->position.wrte == readerPointer->size) {
+		readerPointer->flags |= FLAG_FUL;
+	}
+
 	return readerPointer;
 }
+
+
 
 /*
 ***********************************************************
@@ -161,10 +188,14 @@ BufferPointer readerAddChar(BufferPointer const readerPointer, Cast_char ch) {
 *************************************************************
 */
 Cast_boln readerClear(BufferPointer const readerPointer) {
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Adjust flags original */
-	readerPointer->position.wrte = readerPointer->position.mark = readerPointer->position.read = 0;
-	return True;
+	if (!readerPointer) return 0; // Error, return false
+
+	readerPointer->position.wrte = 0;
+	readerPointer->position.read = 0;
+	readerPointer->position.mark = 0;
+	readerPointer->flags = FLAG_EMP; // Set buffer as empty
+
+	return 1; // Success, return true
 }
 
 /*
