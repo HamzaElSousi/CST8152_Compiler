@@ -109,48 +109,48 @@ enum READER_MODE {
 
 /* Offset declaration */
 typedef struct position {
-	sofia_intg mark;			/* the offset to the mark position (in chars) */
-	sofia_intg read;			/* the offset to the get a char position (in chars) */
-	sofia_intg wrte;			/* the offset to the add chars (in chars) */
+	int mark;			/* the offset to the mark position (in chars) */
+	int read;			/* the offset to the get a char position (in chars) */
+	int wrte;			/* the offset to the add chars (in chars) */
 } Position;
 
 /* Buffer structure */
 typedef struct bufferReader {
-	sofia_string	content;			/* pointer to the beginning of character array (character buffer) */
-	sofia_intg		size;				/* current dynamic memory size (in bytes) allocated to character buffer */
-	sofia_intg		increment;			/* character array increment factor */
-	sofia_intg		mode;				/* operational mode indicator */
-	sofia_byte		flags;				/* contains character array reallocation flag and end-of-buffer flag */
+	str	content;			/* pointer to the beginning of character array (character buffer) */
+	int		size;				/* current dynamic memory size (in bytes) allocated to character buffer */
+	int		increment;			/* character array increment factor */
+	int		mode;				/* operational mode indicator */
+	Cast_byte		flags;				/* contains character array reallocation flag and end-of-buffer flag */
 	Position		position;				/* Offset / position field */
-	sofia_intg		histogram[NCHAR];	/* Statistics of chars */
-	sofia_intg		numReaderErrors;	/* Number of errors from Reader */
+	int		histogram[NCHAR];	/* Statistics of chars */
+	int		numReaderErrors;	/* Number of errors from Reader */
 } Buffer, *BufferPointer;
 
 /* FUNCTIONS DECLARATION:  .................................. */
 /* General Operations */
-BufferPointer	readerCreate		(sofia_intg, sofia_intg, sofia_intg);
-BufferPointer	readerAddChar		(BufferPointer const, sofia_char);
-sofia_boln		readerClear		    (BufferPointer const);
-sofia_boln		readerFree		    (BufferPointer const);
-sofia_boln		readerIsFull		(BufferPointer const);
-sofia_boln		readerIsEmpty		(BufferPointer const);
-sofia_boln		readerSetMark		(BufferPointer const, sofia_intg);
-sofia_intg		readerPrint		    (BufferPointer const);
-sofia_intg		readerLoad			(BufferPointer const, FILE* const);
-sofia_boln		readerRecover		(BufferPointer const);
-sofia_boln		readerRetract		(BufferPointer const);
-sofia_boln		readerRestore		(BufferPointer const);
+BufferPointer	readerCreate		(int, int, int);
+BufferPointer	readerAddChar		(BufferPointer const, Cast_char);
+Cast_boln		readerClear		    (BufferPointer const);
+Cast_boln		readerFree		    (BufferPointer const);
+Cast_boln		readerIsFull		(BufferPointer const);
+Cast_boln		readerIsEmpty		(BufferPointer const);
+Cast_boln		readerSetMark		(BufferPointer const, int);
+int		readerPrint		    (BufferPointer const);
+int		readerLoad			(BufferPointer const, FILE* const);
+Cast_boln		readerRecover		(BufferPointer const);
+Cast_boln		readerRetract		(BufferPointer const);
+Cast_boln		readerRestore		(BufferPointer const);
 /* Getters */
-sofia_char		readerGetChar		(BufferPointer const);
-sofia_string	readerGetContent	(BufferPointer const, sofia_intg);
-sofia_intg		readerGetPosRead	(BufferPointer const);
-sofia_intg		readerGetPosWrte	(BufferPointer const);
-sofia_intg		readerGetPosMark	(BufferPointer const);
-sofia_intg		readerGetSize		(BufferPointer const);
-sofia_intg		readerGetInc		(BufferPointer const);
-sofia_intg		readerGetMode		(BufferPointer const);
-sofia_byte		readerGetFlags		(BufferPointer const);
-sofia_void		readerPrintStat		(BufferPointer const);
-sofia_intg		readerNumErrors		(BufferPointer const);
+Cast_char		readerGetChar		(BufferPointer const);
+str	readerGetContent	(BufferPointer const, int);
+int		readerGetPosRead	(BufferPointer const);
+int		readerGetPosWrte	(BufferPointer const);
+int		readerGetPosMark	(BufferPointer const);
+int		readerGetSize		(BufferPointer const);
+int		readerGetInc		(BufferPointer const);
+int		readerGetMode		(BufferPointer const);
+Cast_byte		readerGetFlags		(BufferPointer const);
+Cast_void		readerPrintStat		(BufferPointer const);
+int		readerNumErrors		(BufferPointer const);
 
 #endif

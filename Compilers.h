@@ -8,31 +8,17 @@
 =---------------------------------------=
 |  COMPILERS - ALGONQUIN COLLEGE (F23)  |
 =---------------------------------------=
-|              ....                     |
-|          ........::.::::::.           |
-|        .:........::.:^^^~~~:          |
-|        :^^::::::^^^::^!7??7~^.        |
-|       .:^~~^!77777~~7?YY?7??7^.       |
-|       :.^~!??!^::::^^~!?5PY??!~.      |
-|       ~!!7J~.:::^^^^~!!~~?G5J?~       |
-|       :^~?!~7?Y57^^?PP5YJ!J5Y?:       |
-|       .~!!.:^!7!:.:7JYYJ7~7Y7^        |
-|       .~77..    . .~^:^^^~7?:         |
-|       .^!^~:::.:^!7?~^~!77J:          |
-|        ^^!Y~^^^^~?YJ77??7JJ^          |
-|       .^7J?~^~~^~7??7??7JY?~:         |
-|        ::^^~^7?!^~~!7???J?J7~:.       |
-|         ^~~!.^7YPPPP5Y?7J7777~.       |
-|        ..:~..:^!JPP5YJ?!777!^.        |
-| .~?JJJJJJJJJJYYYYYPPPPPPPPPPPP5PPYY~  |
-|  :!Y5GGG.___ YYYYYY__._.PPGGGGGG5!.   |
-|   :!Y5G / __| ___ / _(_)__ _ PGP5.    |
-|    :~75 \__ \/ _ \  _| / _` | 5?.     |
-|     7~7 |___/\___/_| |_\__,_| Y5?.    |
-|    .^~!~.....................P5YY7.   |
-|   .:::::::::::::?JJJJYYYYYYYYYJJJJ7.  |
-|                                       |
-=---------------------------------------=
+
+
+	 d8888   .d8888b.                    888
+	d8P888  d88P  Y88b                   888
+   d8P 888  888    888                   888
+  d8P  888  888         8888b.  .d8888b  888888
+ d88   888  888            "88b 88K      888
+ 8888888888 888    888 .d888888 "Y8888b. 888
+	   888  Y88b  d88P 888  888      X88 Y88b.
+	   888   "Y8888P"  "Y888888  88888P'  "Y888
+
 */
 
 /*
@@ -81,17 +67,16 @@ NOTE: Some types may not be directly used by your language,
 
 
 /* TO_DO: Define your typedefs */
-typedef char			sofia_char;
-typedef char* sofia_string;
-typedef int				sofia_intg;
-typedef float			sofia_real;
-typedef void			sofia_void;
+typedef char			Cast_char;
+typedef char*			str;
 
-typedef unsigned char	sofia_boln;
-typedef unsigned char	sofia_byte;
+typedef void			Cast_void;
 
-typedef long			sofia_long;
-typedef double			sofia_doub;
+typedef unsigned char	Cast_boln;
+typedef unsigned char	Cast_byte;
+
+typedef long			Cast_long;
+typedef double			Cast_double;
 
 /*
 ------------------------------------------------------------
@@ -113,11 +98,11 @@ Main functions signatures
 (Code will be updated during next assignments)
 ------------------------------------------------------------
 */
-sofia_intg mainReader(sofia_intg argc, sofia_string* argv);
+int mainReader(int argc, str* argv);
 
 /* 
 TO_DO: Include later mainScaner (A22) and mainParser (A32)
 */
-sofia_void printLogo();
+Cast_void printLogo();
 
 #endif
