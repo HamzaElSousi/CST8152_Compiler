@@ -25,7 +25,7 @@
 ************************************************************
 * File name: Compilers.h
 * Compiler: MS Visual Studio 2022
-* Course: CST 8152 – Compilers, Lab Section: [011, 012]
+* Course: CST 8152 â€“ Compilers, Lab Section: [011, 012]
 * Assignment: A12, A22, A32.
 * Date: May 01 2023
 * Professor: Paulo Sousa
@@ -66,11 +66,12 @@ NOTE: Some types may not be directly used by your language,
 */
 
 
-/* TO_DO: Define your typedefs */
+/* TO_DO: Define your typedefs */                    // THE TASK HERE IS TO MAKE SURE THAT YOUR CODE ARE SIMILARE TO PYTHON 
+                                                    // REMOVED : typdef int    int, 
+                                                   //  REMOVED : typedef float   float;
 typedef char			Cast_char;
-typedef char*			str;
-
-typedef void			Cast_void;
+typedef char*           str;
+typedef void			sofia_void;
 
 typedef unsigned char	Cast_boln;
 typedef unsigned char	Cast_byte;
