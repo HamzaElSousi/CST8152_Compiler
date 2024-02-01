@@ -1,12 +1,12 @@
 /*
 ************************************************************
 * COMPILERS COURSE - Algonquin College
-* Code version: Fall, 2023
+* Code version: Winter, 2024
 * Author: TO_DO
 * Professors: Paulo Sousa
 ************************************************************
 =---------------------------------------=
-|  COMPILERS - ALGONQUIN COLLEGE (F23)  |
+|  COMPILERS - ALGONQUIN COLLEGE (W24)  |
 =---------------------------------------=
 
 
@@ -71,7 +71,7 @@ NOTE: Some types may not be directly used by your language,
                                                    //  REMOVED : typedef float   float;
 typedef char			Cast_char;
 typedef char*           str;
-typedef void			sofia_void;
+typedef void			Cast_void;
 
 typedef unsigned char	Cast_boln;
 typedef unsigned char	Cast_byte;

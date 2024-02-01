@@ -1,13 +1,13 @@
 /*
 ************************************************************
 * COMPILERS COURSE - Algonquin College
-* Code version: Fall, 2023
+* Code version: Winter, 2024
 * Author: TO_DO
 * Professors: Paulo Sousa
 * Student Names: Hamza El Sousi && Mohammad Alashi
 ************************************************************
 =---------------------------------------=
-|  COMPILERS - ALGONQUIN COLLEGE (F23)  |
+|  COMPILERS - ALGONQUIN COLLEGE (W24)  |
 =---------------------------------------=
 
      d8888   .d8888b.                    888
@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
 Cast_void printLogo() {
 	printf("%s%s%s%s%s%s%s%s%s%s%s%s",
 		"\t=--------------------------------------------------=\n",
-		"\t|  COMPILERS - ALGONQUIN COLLEGE (F23)		   |\n",
+		"\t|  COMPILERS - ALGONQUIN COLLEGE (W24)		   |\n",
 		"\t=--------------------------------------------------=\n",
 		"\t|       d8888   .d8888b.                   888     |\n",
 		"\t|     d8P888  d88P  Y88b                   888     |\n",
