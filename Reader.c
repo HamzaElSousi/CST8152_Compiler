@@ -213,10 +213,16 @@ Cast_boln readerClear(BufferPointer const readerPointer) {
 *************************************************************
 */
 Cast_boln readerFree(BufferPointer const readerPointer) {
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Free pointers */
-	return True;
+	if (!readerPointer) return 0; // Error, return false
+
+	if (readerPointer->content) {
+		free(readerPointer->content);
+	}
+	free(readerPointer);
+
+	return 1; // Success, return true
 }
+
 
 /*
 ***********************************************************
@@ -275,8 +281,8 @@ Cast_boln readerIsEmpty(BufferPointer const readerPointer) {
 *************************************************************
 */
 Cast_boln readerSetMark(BufferPointer const readerPointer, int mark) {
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Adjust mark */
+	if (!readerPointer || mark < 0 || mark > readerPointer->position.wrte) return 0; // Error, return false
+
 	readerPointer->position.mark = mark;
 	return True;
 }
@@ -359,8 +365,8 @@ int readerLoad(BufferPointer const readerPointer, FILE* const fileDescriptor) {
 *************************************************************
 */
 Cast_boln readerRecover(BufferPointer const readerPointer) {
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Recover positions */
+	if (!readerPointer) return 0; // Error, return false
+
 	readerPointer->position.read = 0;
 	return True;
 }
@@ -381,9 +387,10 @@ Cast_boln readerRecover(BufferPointer const readerPointer) {
 *************************************************************
 */
 Cast_boln readerRetract(BufferPointer const readerPointer) {
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Retract (return 1 pos read) */
-	return True;
+	if (!readerPointer || readerPointer->position.read <= 0) return 0; // Error, return false
+
+	readerPointer->position.read--;
+	return True; // Success, return true
 }
 
 
@@ -402,8 +409,9 @@ Cast_boln readerRetract(BufferPointer const readerPointer) {
 *************************************************************
 */
 Cast_boln readerRestore(BufferPointer const readerPointer) {
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Restore positions (read/mark) */
+	if (!readerPointer || readerPointer->position.mark < 0 ||
+		readerPointer->position.mark > readerPointer->position.wrte) return False; // Error, return false
+
 	readerPointer->position.read = readerPointer->position.mark;
 	return True;
 }
@@ -424,12 +432,12 @@ Cast_boln readerRestore(BufferPointer const readerPointer) {
 *************************************************************
 */
 Cast_char readerGetChar(BufferPointer const readerPointer) {
-	if (!readerPointer)
-		return CHARSEOF;
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Check condition to read/wrte */
-	/* TO_DO: Set EOB flag */
-	/* TO_DO: Reset EOB flag */
+	if (!readerPointer || readerPointer->position.read >= readerPointer->position.wrte) {
+		// Either the pointer is invalid, or we've reached or surpassed the write position (end of content)
+		return CHARSEOF; // Indicate end of content or error
+	}
+
+	// Return the character at the current read position and increment the read position
 	if (readerPointer->position.wrte>0)
 		return readerPointer->content[readerPointer->position.read++];
 	return READER_TERMINATOR;
@@ -452,9 +460,12 @@ Cast_char readerGetChar(BufferPointer const readerPointer) {
 *************************************************************
 */
 str readerGetContent(BufferPointer const readerPointer, int pos) {
+	if (!readerPointer || pos < 0 || pos >= readerPointer->position.wrte) {
+		// Invalid pointer, position out of bounds
+		return NULL;
+	}
 
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Return content (string) */
+	// Return a pointer to the specified position in the buffer
 	return readerPointer->content + pos;;
 }
 
@@ -517,10 +528,16 @@ int readerGetPosWrte(BufferPointer const readerPointer) {
 *************************************************************
 */
 int readerGetPosMark(BufferPointer const readerPointer) {
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Return mark */
-	return 0;
+	if (!readerPointer) {
+		// If the readerPointer is NULL, indicating that the buffer is not initialized,
+		// return an error code or a value that clearly indicates an invalid position.
+		return -1; // Using -1 as a sentinel value for error or invalid state
+	}
+
+	// Return the current mark position from the buffer's position structure.
+	return readerPointer->position.mark;
 }
+
 
 
 /*
@@ -538,10 +555,15 @@ int readerGetPosMark(BufferPointer const readerPointer) {
 *************************************************************
 */
 int readerGetSize(BufferPointer const readerPointer) {
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Return size */
-	return 0;
+	if (!readerPointer) {
+		// If the buffer pointer is NULL, indicate an error or invalid state.
+		return -1; // Using -1 as a sentinel value for error.
+	}
+
+	// Return the current size of the buffer.
+	return readerPointer->size;
 }
+
 
 /*
 ***********************************************************
@@ -558,10 +580,15 @@ int readerGetSize(BufferPointer const readerPointer) {
 *************************************************************
 */
 int readerGetInc(BufferPointer const readerPointer) {
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Return increment */
-	return 0;
+	if (!readerPointer) {
+		// If the buffer pointer is NULL, indicate an error or invalid state.
+		return -1; // Using -1 as a sentinel value for error.
+	}
+
+	// Return the increment factor of the buffer.
+	return readerPointer->increment;
 }
+
 
 /*
 ***********************************************************
@@ -578,9 +605,14 @@ int readerGetInc(BufferPointer const readerPointer) {
 *************************************************************
 */
 int readerGetMode(BufferPointer const readerPointer) {
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Return mode */
-	return 0;
+	if (!readerPointer) {
+		// If the buffer pointer is NULL, indicate an error or invalid state.
+		return -1; // Using -1 as a sentinel value for error, assuming mode is char and -1 is distinguishable.
+	}
+
+	// Return the operational mode of the buffer.
+	// Casting to int to align with the function's return type; adjust if necessary.
+	return (int)readerPointer->mode;
 }
 
 
@@ -599,11 +631,16 @@ int readerGetMode(BufferPointer const readerPointer) {
 *************************************************************
 */
 Cast_byte readerGetFlags(BufferPointer const readerPointer) {
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Return flags */
-	return 0;
-}
+	if (!readerPointer) {
+		// If the buffer pointer is NULL, it's not possible to return meaningful flags.
+		// Returning 0 as a default value, indicating no flags are set.
+		// Adjust based on how you wish to handle this error case.
+		return 0;
+	}
 
+	// Return the current flags of the buffer.
+	return readerPointer->flags;
+}
 
 
 /*
@@ -619,9 +656,23 @@ Cast_byte readerGetFlags(BufferPointer const readerPointer) {
 *************************************************************
 */
 Cast_void readerPrintStat(BufferPointer const readerPointer) {
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Print the histogram */
+	if (!readerPointer) {
+		printf("Buffer is NULL.\n");
+		return;
+	}
+
+	printf("Buffer Statistics:\n");
+	printf("Size: %d\n", readerPointer->size);
+	printf("Write Position: %d\n", readerPointer->position.wrte);
+	printf("Read Position: %d\n", readerPointer->position.read);
+	printf("Mark Position: %d\n", readerPointer->position.mark);
+	printf("Flags: %s%s%s%s\n",
+		(readerPointer->flags & FLAG_FUL) ? "FULL " : "",
+		(readerPointer->flags & FLAG_EMP) ? "EMPTY " : "",
+		(readerPointer->flags & FLAG_REL) ? "REALLOCATED " : "",
+		(readerPointer->flags & FLAG_ERROR) ? "ERROR " : "");
 }
+
 
 /*
 ***********************************************************
@@ -637,7 +688,10 @@ Cast_void readerPrintStat(BufferPointer const readerPointer) {
 *************************************************************
 */
 int readerNumErrors(BufferPointer const readerPointer) {
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Returns the number of errors */
-	return 0;
+	if (!readerPointer) {
+		// Consider the inability to access the buffer itself as an error condition
+		return -1; // Or another sentinel value indicating the error
+	}
+
+	return readerPointer->numReaderErrors;
 }

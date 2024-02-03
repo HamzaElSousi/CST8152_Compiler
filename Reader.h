@@ -89,10 +89,10 @@ enum READER_MODE {
 
 #define BUFFER_EMPTY FLAG_EMP 
 
-/* TO_DO: BIT 3: END = End of buffer flag */
-/* TO_DO: BIT 2: REL = Rellocation memory flag */
-/* TO_DO: BIT 1: EMP = Buffer empty flag */
-/* TO_DO: BIT 0: FUL = Buffer full flag */
+/*  BIT 3: END = End of buffer flag */
+/*  BIT 2: REL = Rellocation memory flag */
+/*  BIT 1: EMP = Buffer empty flag */
+/*  BIT 0: FUL = Buffer full flag */
 
 #define NCHAR				128			/* Chars from 0 to 127 */
 
