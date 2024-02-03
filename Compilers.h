@@ -2,7 +2,7 @@
 ************************************************************
 * COMPILERS COURSE - Algonquin College
 * Code version: Winter, 2024
-* Author: TO_DO
+* Author: Hamza El Sousi
 * Professors: Paulo Sousa
 ************************************************************
 =---------------------------------------=
@@ -47,8 +47,6 @@
  * (see the progression: reader > scanner > parser).
  * ............................................................................
  */
-
-/* TO_DO: Adjust your language (cannot be "Sofia") */
 
 /* Language name */
 #define STR_LANGNAME	"4Cast"

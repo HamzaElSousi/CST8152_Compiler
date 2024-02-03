@@ -2,13 +2,14 @@
 ************************************************************
 * COMPILERS COURSE - Algonquin College
 * Code version: Winter, 2024
-* Author: TO_DO
+* Author: Hamza El Sousi && Mohammad Alashi
 * Professors: Paulo Sousa
 * Student Names: Hamza El Sousi && Mohammad Alashi
+* Assignment A12 Due Date: Feb 04 2024
 ************************************************************
-=---------------------------------------=
-|  COMPILERS - ALGONQUIN COLLEGE (W24)  |
-=---------------------------------------=
+=---------------------------------------------=
+|      COMPILERS - ALGONQUIN COLLEGE (W24)    |
+=---------------------------------------------=
 
      d8888   .d8888b.                    888
     d8P888  d88P  Y88b                   888
@@ -27,7 +28,7 @@
 * Compiler: MS Visual Studio 2022
 * Course: CST 8152 – Compilers, Lab Section: [011, 012]
 * Assignment: A12, A22, A32.
-* Date: May 01 2023
+* Date: Feb 03 2024
 * Professor: Paulo Sousa
 * Purpose: This file is the main program of Compilers Project
 * Function list: main().
@@ -100,7 +101,7 @@ int main(int argc, char** argv) {
 ***********************************************************
 * Function name: printLogo
 * Purpose: Print Logo
-* Author: Paulo Sousa
+* Author: Hamza El Sousi
 * History/Versions: Ver S23
 * Called functions: -
 * Parameters: -
@@ -108,8 +109,6 @@ int main(int argc, char** argv) {
 * Algorithm: -
 *************************************************************
 */
-
-/* TO_DO: Update your logo with your own language message */
 
 Cast_void printLogo() {
 	printf("%s%s%s%s%s%s%s%s%s%s%s%s",

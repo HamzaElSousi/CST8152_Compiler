@@ -2,13 +2,13 @@
 ************************************************************
 * COMPILERS COURSE - Algonquin College
 * Code version: Winter, 2024
-* Author: TO_DO
+* Author: Hamza El Sousi && Mohammed Alashi
 * Professors: Paulo Sousa
 * Student Names: Hamza El Sousi && Mohammad Alashi
 ************************************************************
-=---------------------------------------=
-|  COMPILERS - ALGONQUIN COLLEGE (W24)  |
-=---------------------------------------=
+=---------------------------------------------=
+|      COMPILERS - ALGONQUIN COLLEGE (W24)    |
+=---------------------------------------------=
 
 	 d8888   .d8888b.                    888
 	d8P888  d88P  Y88b                   888

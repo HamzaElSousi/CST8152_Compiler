@@ -2,13 +2,13 @@
 ************************************************************
 * COMPILERS COURSE - Algonquin College
 * Code version: Winter, 2024
-* Author: TO_DO
+* Author: Hamza El Sousi && Mohammad Alashi
 * Professors: Paulo Sousa
 * Student Names: Hamza El Sousi && Mohammad Alashi
 ************************************************************
-=---------------------------------------=
-|  COMPILERS - ALGONQUIN COLLEGE (W24)  |
-=---------------------------------------=
+=---------------------------------------------=
+|      COMPILERS - ALGONQUIN COLLEGE (W24)    |
+=---------------------------------------------=
 
 	 d8888   .d8888b.                    888
 	d8P888  d88P  Y88b                   888
@@ -213,14 +213,14 @@ Cast_boln readerClear(BufferPointer const readerPointer) {
 *************************************************************
 */
 Cast_boln readerFree(BufferPointer const readerPointer) {
-	if (!readerPointer) return 0; // Error, return false
+	if (!readerPointer) return False; // Error, return false
 
 	if (readerPointer->content) {
 		free(readerPointer->content);
 	}
 	free(readerPointer);
 
-	return 1; // Success, return true
+	return True; // Success, return true
 }
 
 
@@ -239,10 +239,12 @@ Cast_boln readerFree(BufferPointer const readerPointer) {
 *************************************************************
 */
 Cast_boln readerIsFull(BufferPointer const readerPointer) {
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Check flag if buffer is FUL */
-	return False;
+	if (!readerPointer) return False; // Check for NULL pointer to ensure defensive programming
+
+	// Check if the buffer is full by examining the FLAG_FUL flag within the buffer's flags attribute
+	return (readerPointer->flags & FLAG_FUL) ? True : False;
 }
+
 
 
 /*
@@ -260,10 +262,12 @@ Cast_boln readerIsFull(BufferPointer const readerPointer) {
 *************************************************************
 */
 Cast_boln readerIsEmpty(BufferPointer const readerPointer) {
-	/* TO_DO: Defensive programming */
-	/* TO_DO: Check flag if buffer is EMP */
-	return False;
+	if (!readerPointer) return False; // Ensure the buffer pointer is not NULL
+
+	// Determine if the buffer is empty by checking the FLAG_EMP flag
+	return (readerPointer->flags & FLAG_EMP) ? True : False;
 }
+
 
 /*
 ***********************************************************
