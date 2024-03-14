@@ -87,6 +87,10 @@ int main(int argc, char** argv) {
 		mainReader(argc, argv);
 		break;
 	/* TO_DO: Include later SCANNER (A22) and PARSER (A32) */
+	case PGM_SCANNER:
+		printf("%s%c%s", "\n[Option '", PGM_SCANNER, "': Starting READER .....]\n\n");
+		mainSCANNER(argc, argv);
+		break;
 	default:
 		printf("%s%c%s%c%s%c%s", "* OPTIONS:\n- [",
 			PGM_READER, "] - Reader\n- [",
