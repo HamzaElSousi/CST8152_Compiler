@@ -13,7 +13,7 @@ project ("4CastCMake")
 
 # Add source to this project's executable.
 add_executable (4CastCMake "Compilers.h"	"Compilers.c"
-	"Reader.h"		"Reader.c"		"MainReader.c")
+	"Reader.h"		"Reader.c"		"MainReader.c"  "Scanner.h" "Scanner.c" "MainScanner.c"     )
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET 4CastCMake PROPERTY CXX_STANDARD 20)
