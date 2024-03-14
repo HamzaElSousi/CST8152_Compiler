@@ -143,10 +143,7 @@ int mainReader(int argc, str* argv) {
 	return (EXIT_SUCCESS);
 }
 
-int mainScanner(int argc, str* argv)
-{
-	return 0;
-}
+
 
 /*
 ************************************************************
