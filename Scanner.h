@@ -73,39 +73,40 @@
 #define RTE_CODE 1  /* Value for run-time error */
 
 /* TO_DO: Define the number of tokens */
-#define NUM_TOKENS 14
+#define NUM_TOKENS 13
 
 /* TO_DO: Define Token codes - Create your token classes */
 enum TOKENS {
-	ERR_T,		     /*  0: Error token */
-    COMMENT_T,       /* 1: Comment token (single-line, starts with #) */
-	NEW_LINE_T,      /* 4: New line token (\n) to end an statement */
-	MNID_T,		     /*  1: Method name identifier token (start: &) */
-	INL_T,		     /*  2: Integer literal token */
-	STR_T,		     /*  3: String literal token */
-	FLOAT_LIT_T,     /* 8: Floating-point literal token (not directly mentioned but implied by '.') */
-	LPR_T,		     /*  4: Left parenthesis token */
-	RPR_T,	        /*  5: Right parenthesis token */
-	LBR_T,	        /*  6: Left brace token */
-	RBR_T,		    /*  7: Right brace token */
-	KW_T,		    /*  8: Keyword token */
-	RTE_T,		    /* 10: Run-time error token */
-	SEOF_T,		    /* 11: Source end-of-file token */
-	 
+	ERR_T,		/*  0: Error token */
+	MNID_T,		/*  1: Method name identifier token (start: &) */
+	INL_T,		/*  2: Integer literal token */
+	STR_T,		/*  3: String literal token */
+	LPR_T,		/*  4: Left parenthesis token */
+	RPR_T,		/*  5: Right parenthesis token */
+	LBR_T,		/*  6: Left brace token */
+	RBR_T,		/*  7: Right brace token */
+	KW_T,		/*  8: Keyword token */
+	EOS_T,		/*  9: End of statement (semicolon) */
+	RTE_T,		/* 10: Run-time error token */
+	SEOF_T,		/* 11: Source end-of-file token */
+	CMT_T		/* 12: Comment token */
 };
 
 /* TO_DO: Define the list of keywords */
 static str tokenStrTable[NUM_TOKENS] = {
-	"if",
-	"elif",
-	"for",
-	"while",
-	"class",
-	"return",
-	"break",
-	"continue",
-	"def",
-	"import"
+	"ERR_T",
+	"MNID_T",
+	"INL_T",
+	"STR_T",
+	"LPR_T",
+	"RPR_T",
+	"LBR_T",
+	"RBR_T",
+	"KW_T",
+	"EOS_T",
+	"RTE_T",
+	"SEOF_T",
+	"CMT_T"
 };
 
 /* TO_DO: Operators token attributes */
@@ -116,19 +117,18 @@ typedef enum SourceEndOfFile { SEOF_0, SEOF_255 } EofOperator;
 
 /* TO_DO: Data structures for declaring the token and its attributes */
 typedef union TokenAttribute {
-	int codeType;                  // Integer attributes accessor, if needed
-	AriOperator arithmeticOperator; // Arithmetic operator attribute code
-	RelOperator relationalOperator; // Relational operator attribute code
-	LogOperator logicalOperator;    // Logical operator attribute code
-	EofOperator seofType;           // Source-end-of-file attribute code
-	int intValue;                   // Integer literal attribute (value)
-	int keywordIndex;               // Keyword index in the keyword table, if used
-	int contentString;              // String literal offset from the beginning of the string literal buffer (stringLiteralTable->content), if needed
-	float floatValue;               // Floating-point literal attribute (value)
-	Cast_char idLexeme[VID_LEN + 1];     // Variable identifier token attribute
-	Cast_char errLexeme[ERR_LEN + 1];    // Error token attribute
+	int codeType;      /* integer attributes accessor */
+	AriOperator arithmeticOperator;		/* arithmetic operator attribute code */
+	RelOperator relationalOperator;		/* relational operator attribute code */
+	LogOperator logicalOperator;		/* logical operator attribute code */
+	EofOperator seofType;				/* source-end-of-file attribute code */
+	int intValue;				/* integer literal attribute (value) */
+	int keywordIndex;			/* keyword index in the keyword table */
+	int contentString;			/* string literal offset from the beginning of the string literal buffer (stringLiteralTable->content) */
+	float floatValue;				/* floating-point literal attribute (value) */
+	Cast_char idLexeme[VID_LEN + 1];	/* variable identifier token attribute */
+	Cast_char errLexeme[ERR_LEN + 1];	/* error token attribite */
 } TokenAttribute;
-
 
 /* TO_DO: Should be used if no symbol table is implemented */
 typedef struct idAttibutes {
@@ -163,61 +163,39 @@ typedef struct scannerData {
 
 /* TO_DO: Define lexeme FIXED classes */
 /* These constants will be used on nextClass */
-#define CHRCOL_HASH '#'  // Single line Comments start
-#define CHRCOL_UNDERSCORE '_'  // undercore 
-#define CHRCOL_QUOTE '\''  // Part of string delimiters
-#define CHRCOL_DOUBLEQUOTE '"'  // Part of string delimiters
-#define CHRCOL_COMMA ','  // Separates items in lists, function arguments
-#define CHRCOL_DOT '.'  // Decimal point in floats, object method access
-#define CHRCOL_LPAREN '('  // Start of function arguments, expressions
-#define CHRCOL_RPAREN ')'  // End of function arguments, expressions
-#define CHRCOL_MINUS '-'  // Arithmetic subtraction, unary negation
-#define CHRCOL_PLUS '+'  // Arithmetic addition
-#define CHRCOL_ASTERISK '*'  // Arithmetic multiplication
-#define CHRCOL_SLASH '/'  // Arithmetic division
-#define CHRCOL_CARET '^'  // Exponentiation (if used in your language)
-#define CHRCOL_EQUAL '='  // Assignment
-#define CHRCOL_EQEQ '=='  // Equality comparison
-#define CHRCOL_NEQ '!='  // Inequality comparison
-#define CHRCOL_NOT '!'  // Logical NOT
-#define CHRCOL_OROR '||'  // Logical OR
-#define CHRCOL_ANDAND '&&'  // Logical AND
-#define CHRCOL_ELLIPSIS '...'  // Range operator, variadic arguments (if applicable)
-
+#define CHRCOL2 '_'
+#define CHRCOL3 '&'
+#define CHRCOL4 '\''
+#define CHRCOL6 '#'
 
 /* These constants will be used on VID / MID function */
 #define MNID_SUF '&'
 #define COMM_SYM '#'
 
-/* Error states and illegal state */
+/* TO_DO: Error states and illegal state */
 #define ESNR	8		/* Error state with no retract */
 #define ESWR	9		/* Error state with retract */
 #define FS		10		/* Illegal state */
 
-/* State transition table definition */
-#define NUM_STATES		14		/* Updated to match the number of states from your automata */
-#define CHAR_CLASSES	9		/* Number of character classes */
+ /* TO_DO: State transition table definition */
+#define NUM_STATES		10
+#define CHAR_CLASSES	8
 
 /* TO_DO: Transition table - type of states defined in separate table */
 static int transitionTable[NUM_STATES][CHAR_CLASSES] = {
-	/*    [A-z], [0-9],  _,    &,     (,)    (X),    ),    N,    .    */
-	/*    L(0),   D(1), U(2), B1O(3), Q(4), X(5), B1C(6), #(7), P(8) */
-	{     3,      8,    ESNR, ESNR,   4 ,   ESWR, ESNR,    10,  ESNR   },  // S0
-	{     1,      1,     1,    1,     1 ,    1,     1,     2,  1   },  // S1
-	{    FS,     FS,    FS,   FS,     FS,   FS,    FS,    FS,   FS    },  // S2
-	{     3,      3,     3,   13,     5 ,    5,    4 ,    5 ,   5    },  // S3
-	{    FS,     FS,    FS,   FS,     FS,   FS,    FS,    FS,   FS    },  // S4
-	{    FS,     FS,    FS,   FS,     FS,   FS,    FS,    FS,   FS    },  // S5
-	{     6,      6,     6,    6,      7,    6,    6 ,     6,   6    },  // S6
-	{    FS,     FS,    FS,   FS,     FS,   FS,    FS,    FS,  FS    },  // S7
-	{     9,      8,     9,    9,     9 ,    9,    9 ,     9,  10   },  // S8
-	{    FS,     FS,    FS,   FS,     FS,   FS,    FS,    FS,  FS   },  // S9
-	{  ESNR,     11,  ESNR, ESNR,   ESNR, ESNR,  ESNR,  ESNR, ESNR  },  // S10
-	{    12,     11,    12,   12,     12,   12,    12,   12,   12    },  // S11
-	{    FS,     FS,    FS,   FS,     FS,   FS,    FS,   FS,   FS   },  // S12
-	{    13,     13,    13,   13,     ESNR, ESNR,  ESNR, ESNR,  4   }   // S13
+/*    [A-z],[0-9],    _,    &,   \', SEOF,    #, other
+	   L(0), D(1), U(2), M(3), Q(4), E(5), C(6),  O(7) */
+	{     1, ESNR, ESNR, ESNR,    4, ESWR,	  6, ESNR},	// S0: NOAS
+	{     1,    1,    1,    2,	  3,    3,   3,    3},	// S1: NOAS
+	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S2: ASNR (MVID)
+	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S3: ASWR (KEY)
+	{     4,    4,    4,    4,    5, ESWR,	  4,    4},	// S4: NOAS
+	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S5: ASNR (SL)
+	{     6,    6,    6,    6,    6, ESWR,	  7,    6},	// S6: NOAS
+	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S7: ASNR (COM)
+	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S8: ASNR (ES)
+	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS}  // S9: ASWR (ER)
 };
-
 
 /* Define accepting states types */
 #define NOFS	0		/* not accepting state */
@@ -226,16 +204,16 @@ static int transitionTable[NUM_STATES][CHAR_CLASSES] = {
 
 /* TO_DO: Define list of acceptable states */
 static int stateType[NUM_STATES] = {
-	NOFS, /* S0: Initial state, not accepting */
-	NOFS, /* S1: Non-accepting state */
-	FSNR, /* S2: Final state for Method IDs, no retract */
-	FSWR, /* S3: Final state for Keywords, with retract */
-	NOFS, /* S4: Non-accepting state */
-	FSNR, /* S5: Final state for String Literals, no retract */
-	NOFS, /* S6: Non-accepting state */
-	FSNR, /* S7: Final state for Comments, no retract */
-	ESNR, /* S8: Error state with no retract */
-	ESWR, /* S9: Error state with retract */
+	NOFS, /* 00 */
+	NOFS, /* 01 */
+	FSNR, /* 02 (MID) - Methods */
+	FSWR, /* 03 (KEY) */
+	NOFS, /* 04 */
+	FSNR, /* 05 (SL) */
+	NOFS, /* 06 */
+	FSNR, /* 07 (COM) */
+	FSNR, /* 08 (Err1 - no retract) */
+	FSWR  /* 09 (Err2 - retract) */
 };
 
 /*
@@ -264,7 +242,6 @@ typedef Token(*PTR_ACCFUN)(str lexeme);
 Token funcSL	(str lexeme);
 Token funcIL	(str lexeme);
 Token funcID	(str lexeme);
-Token funcFL    (str lexeme);
 Token funcCMT   (str lexeme);
 Token funcKEY	(str lexeme);
 Token funcErr	(str lexeme);
@@ -282,11 +259,10 @@ static PTR_ACCFUN finalStateTable[NUM_STATES] = {
 	funcKEY,	/* KEY  [03] */
 	NULL,		/* -    [04] */
 	funcSL,		/* SL   [05] */
-	funcFL,     /* FL   [06] */
-	NULL,		/* -    [07] */
-	funcCMT,	/* COM  [08] */
-	funcErr,	/* ERR1 [09] */
-	funcErr		/* ERR2 [0q0] */
+	NULL,		/* -    [06] */
+	funcCMT,	/* COM  [07] */
+	funcErr,	/* ERR1 [06] */
+	funcErr		/* ERR2 [07] */
 };
 
 /*
