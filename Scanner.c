@@ -342,15 +342,25 @@ int nextClass(Cast_char c) {
 Token funcCMT(str lexeme) {
 	Token currentToken = { 0 };
 	int i = 0, len = (int)strlen(lexeme);
+
+	// Assuming stringLiteralTable is an instance of Buffer
 	currentToken.attribute.contentString = readerGetPosWrte(stringLiteralTable);
-	for (i = 1; i < len - 1; i++) {
-		if (lexeme[i] == '\n')
-			line++;
+
+	// Process the comment here
+	for (i = 0; i < len; i++) {
+		if (lexeme[i] == '\n') {
+			line++;  // Increment line counter when a newline is found
+		}
 	}
+
+	// Set the token code for a comment
 	currentToken.code = CMT_T;
-	scData.scanHistogram[currentToken.code]++;
+	// Assuming scData is a global instance of ScannerData
+	scData.scanHistogram[currentToken.code]++;  // Increment histogram for comments
+
 	return currentToken;
 }
+
 
 
  /*
