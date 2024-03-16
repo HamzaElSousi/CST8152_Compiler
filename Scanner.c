@@ -91,19 +91,25 @@ static BufferPointer sourceBuffer;			/* Pointer to input source buffer */
  *		This function initializes the scanner using defensive programming.
  ***********************************************************
  */
- /* TO_DO: Follow the standard and adjust datatypes */
+ /* TO_DO: Follow the standard and adjust datatypes */   /*ok*/
 
 int startScanner(BufferPointer psc_buf) {
-	/* TO_DO: Start histogram */
-	for (int i=0; i<NUM_TOKENS;i++)
+	if (psc_buf == NULL) {
+		fprintf(stderr, "Error: Null pointer passed to startScanner\n");
+		return EXIT_FAILURE;
+	}
+
+	// Initialize histogram
+	for (int i = 0; i < NUM_TOKENS; i++)
 		scData.scanHistogram[i] = 0;
-	/* Basic scanner initialization */
-	/* in case the buffer has been read previously  */
+
+	// Basic scanner initialization
 	readerRecover(psc_buf);
 	readerClear(stringLiteralTable);
 	line = 1;
 	sourceBuffer = psc_buf;
-	return EXIT_SUCCESS; /*0*/
+
+	return EXIT_SUCCESS; // 0 indicates success
 }
 
 /*
@@ -358,7 +364,7 @@ Token funcIL(str lexeme) {
 	else {
 		tlong = atol(lexeme);
 		if (tlong >= 0 && tlong <= SHRT_MAX) {
-			currentToken.code = INL_T;
+			currentToken.code = IN_T;
 			scData.scanHistogram[currentToken.code]++;
 			currentToken.attribute.intValue = (int)tlong;
 		}
@@ -443,7 +449,7 @@ Token funcSL(str lexeme) {
 		errorNumber = RTE_CODE;
 		return currentToken;
 	}
-	currentToken.code = STR_T;
+	currentToken.code = STRL_T;
 	scData.scanHistogram[currentToken.code]++;
 	return currentToken;
 }
@@ -536,7 +542,7 @@ Cast_void printToken(Token t) {
 	case MNID_T:
 		printf("MNID_T\t\t%s\n", t.attribute.idLexeme);
 		break;
-	case STR_T:
+	case STRL_T:
 		printf("STR_T\t\t%d\t ", (int)t.attribute.codeType);
 		printf("%s\n", readerGetContent(stringLiteralTable, (int)t.attribute.codeType));
 		break;
