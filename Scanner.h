@@ -71,8 +71,8 @@ enum TOKENS {
 	RPR_T,	/*  5: Right parenthesis token */
 	LBR_T,	/*  6: Left brace token */
 	RBR_T,	/*  7: Right brace token */
+    NEWLINE_T,  /* 9: New line token */
 	KW_T,		/*  8: Keyword token */
-	EOS_T,		/*  9: End of statement (semicolon) */
 	RTE_T,		/* 10: Run-time error token */
 	SEOF_T,		/* 11: Source end-of-file token */
 	CMT_T		/* 12: Comment token */
