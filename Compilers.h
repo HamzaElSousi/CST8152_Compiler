@@ -98,7 +98,7 @@ Main functions signatures
 ------------------------------------------------------------
 */
 int mainReader(int argc, str* argv);
-
+int mainScanner(int argc, str* argv);
 /* 
 TO_DO: Include later mainScaner (A22) and mainParser (A32)
 */
