@@ -63,13 +63,14 @@ TESTING
 /* TO_DO: Define Token codes - Create your token classes */
 enum TOKENS {
 	ERR_T,		/*  0: Error token */
-	MNID_T,		/*  1: Method name identifier token (start: &) */
-	INL_T,		/*  2: Integer literal token */
-	STR_T,		/*  3: String literal token */
-	LPR_T,		/*  4: Left parenthesis token */
-	RPR_T,		/*  5: Right parenthesis token */
-	LBR_T,		/*  6: Left brace token */
-	RBR_T,		/*  7: Right brace token */
+	MNID_T,		/*  1: Method name identifier token (_) */ 
+	IN_T,		/*  2: Integer literal token */
+	STRL_T,		/*  3: String literal token */
+	FL_T,       /*  4: Float  litreal toekn    */
+	LPR_T,	/*  4: Left parenthesis token */
+	RPR_T,	/*  5: Right parenthesis token */
+	LBR_T,	/*  6: Left brace token */
+	RBR_T,	/*  7: Right brace token */
 	KW_T,		/*  8: Keyword token */
 	EOS_T,		/*  9: End of statement (semicolon) */
 	RTE_T,		/* 10: Run-time error token */
@@ -148,13 +149,13 @@ typedef struct scannerData {
 
 /* TO_DO: Define lexeme FIXED classes */
 /* These constants will be used on nextClass */
-#define CHRCOL2 '_'
-#define CHRCOL3 '&'
+#define CHRCOL2 '&'
+#define CHRCOL3 '_'
 #define CHRCOL4 '\''
 #define CHRCOL6 '#'
 
 /* These constants will be used on VID / MID function */
-#define MNID_SUF '&'
+#define MNID_SUF '_'
 #define COMM_SYM '#'
 
 /* TO_DO: Error states and illegal state */
