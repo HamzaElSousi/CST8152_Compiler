@@ -58,12 +58,12 @@ TESTING
 #define RTE_CODE 1  /* Value for run-time error */
 
 /* TO_DO: Define the number of tokens */
-#define NUM_TOKENS 13
+#define NUM_TOKENS 14
 
 /* TO_DO: Define Token codes - Create your token classes */
 enum TOKENS {
 	ERR_T,		/*  0: Error token */
-	MNID_T,		/*  1: Method name identifier token (_) */ 
+	MNID_T,		/*  1: Method name identifier token (_) */
 	IN_T,		/*  2: Integer literal token */
 	STRL_T,		/*  3: String literal token */
 	FL_T,       /*  4: Float  litreal toekn    */
@@ -71,11 +71,13 @@ enum TOKENS {
 	RPR_T,	/*  5: Right parenthesis token */
 	LBR_T,	/*  6: Left brace token */
 	RBR_T,	/*  7: Right brace token */
-    NEWLINE_T,  /* 9: New line token */
+	NEWLINE_T,  /* 9: New line token */
 	KW_T,		/*  8: Keyword token */
 	RTE_T,		/* 10: Run-time error token */
 	SEOF_T,		/* 11: Source end-of-file token */
-	CMT_T		/* 12: Comment token */
+	CMT_T,		/* 12: Comment token */
+	INDENT_T,   /* 7: Indentation increase token */
+
 };
 
 /* TO_DO: Define the list of keywords */
@@ -89,7 +91,7 @@ static str tokenStrTable[NUM_TOKENS] = {
 	"LBR_T",
 	"RBR_T",
 	"KW_T",
-	"EOS_T",
+	"NEWLINE_T",
 	"RTE_T",
 	"SEOF_T",
 	"CMT_T"
