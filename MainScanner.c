@@ -81,6 +81,7 @@
 
  /* Global objects - variables (used in other codes as external) */
 BufferPointer stringLiteralTable;	/* This buffer implements String Literal Table */
+BufferPointer addToFloatLiteralTable;
 int errorNumber;				/* Run-time error number = 0 by default (ANSI) */
 
 /* External objects */

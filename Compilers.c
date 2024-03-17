@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
 		break;
 
 	case PGM_SCANNER:
-		printf("%s%c%s", "\n[Option '", PGM_SCANNER, "': Starting READER .....]\n\n");
+		printf("%s%c%s", "\n[Option '", PGM_SCANNER, "': Starting SCANNER .....]\n\n");
 		mainScanner(argc, argv);
 		break;
 	/* TO_DO: Include later SCANNER (A22) and PARSER (A32) */
