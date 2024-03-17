@@ -2,13 +2,13 @@
 ************************************************************
 * COMPILERS COURSE - Algonquin College
 * Code version: Fall, 2023
-* Author: Hamza El Sousi
+* Author: Hamza El Sousi & Mohammed Alashi 
 * Professors: Paulo Sousa
 ************************************************************
 =---------------------------------------------=
 |      COMPILERS - ALGONQUIN COLLEGE (W24)    |
 =---------------------------------------------=
-TESTING
+
 
 	 d8888   .d8888b.                    888
 	d8P888  d88P  Y88b                   888
@@ -54,11 +54,12 @@ TESTING
 #define VID_LEN 20  /* variable identifier length */
 #define ERR_LEN 40  /* error message length */
 #define NUM_LEN 5   /* maximum number of digits for IL */
+#define Symbole_TOKENS 10
 
 #define RTE_CODE 1  /* Value for run-time error */
 
 /* TO_DO: Define the number of tokens */
-#define NUM_TOKENS 14
+#define NUM_TOKENS 16
 
 /* TO_DO: Define Token codes - Create your token classes */
 enum TOKENS {
@@ -67,16 +68,19 @@ enum TOKENS {
 	IN_T,		/*  2: Integer literal token */
 	STRL_T,		/*  3: String literal token */
 	FL_T,       /*  4: Float  litreal toekn    */
-	LPR_T,	/*  4: Left parenthesis token */
-	RPR_T,	/*  5: Right parenthesis token */
-	LBR_T,	/*  6: Left brace token */
-	RBR_T,	/*  7: Right brace token */
+	LPR_T,	    /*  4: Left parenthesis token */
+	RPR_T,	    /*  5: Right parenthesis token */
+	LBR_T,	    /*  6: Left brace token */
+	RBR_T,	    /*  7: Right brace token */
 	NEWLINE_T,  /* 9: New line token */
 	KW_T,		/*  8: Keyword token */
 	RTE_T,		/* 10: Run-time error token */
 	SEOF_T,		/* 11: Source end-of-file token */
 	CMT_T,		/* 12: Comment token */
 	INDENT_T,   /* 7: Indentation increase token */
+	
+
+	
 
 };
 
@@ -86,6 +90,7 @@ static str tokenStrTable[NUM_TOKENS] = {
 	"MNID_T",
 	"INL_T",
 	"STR_T",
+	 "FL_T",
 	"LPR_T",
 	"RPR_T",
 	"LBR_T",
@@ -94,14 +99,46 @@ static str tokenStrTable[NUM_TOKENS] = {
 	"NEWLINE_T",
 	"RTE_T",
 	"SEOF_T",
-	"CMT_T"
+	"CMT_T",
+	"INDENT_T",
+	
 };
 
 /* TO_DO: Operators token attributes */
-typedef enum ArithmeticOperators { OP_ADD, OP_SUB, OP_MUL, OP_DIV } AriOperator;
-typedef enum RelationalOperators { OP_EQ, OP_NE, OP_GT, OP_LT } RelOperator;
-typedef enum LogicalOperators { OP_AND, OP_OR, OP_NOT } LogOperator;
-typedef enum SourceEndOfFile { SEOF_0, SEOF_255 } EofOperator;
+typedef enum ArithmeticOperators {
+	OP_ADD, OP_SUB, OP_MUL, OP_DIV, OP_FLOOR_DIV, OP_MOD, OP_EXP
+} AriOperator;
+
+typedef enum RelationalOperators {
+	OP_EQ, OP_NE, OP_GT, OP_LT, OP_GE, OP_LE
+} RelOperator;
+
+typedef enum LogicalOperators {
+	OP_AND, OP_OR, OP_NOT
+} LogOperator;
+
+typedef enum BitwiseOperators {
+	OP_BITWISE_AND, OP_BITWISE_OR, OP_BITWISE_XOR, OP_BITWISE_NOT, OP_LSHIFT, OP_RSHIFT
+} BitwiseOperator;
+
+typedef enum AssignmentOperators {
+	OP_ASSIGN, OP_ADD_ASSIGN, OP_SUB_ASSIGN, OP_MUL_ASSIGN, OP_DIV_ASSIGN, OP_FLOOR_DIV_ASSIGN,
+	OP_MOD_ASSIGN, OP_EXP_ASSIGN, OP_BITWISE_AND_ASSIGN, OP_BITWISE_OR_ASSIGN,
+	OP_BITWISE_XOR_ASSIGN, OP_LSHIFT_ASSIGN, OP_RSHIFT_ASSIGN
+} AssignOperator;
+
+typedef enum MembershipOperators {
+	OP_IN, OP_NOT_IN
+} MembershipOperator;
+
+typedef enum IdentityOperators {
+	OP_IS, OP_IS_NOT
+} IdentityOperator;
+
+typedef enum SourceEndOfFile {
+	SEOF_0, SEOF_255
+} EofOperator;
+
 
 /* TO_DO: Data structures for declaring the token and its attributes */
 typedef union TokenAttribute {
@@ -151,9 +188,10 @@ typedef struct scannerData {
 
 /* TO_DO: Define lexeme FIXED classes */
 /* These constants will be used on nextClass */
-#define CHRCOL2 '&'
-#define CHRCOL3 '_'
+#define CHRCOL2 '('
+#define CHRCOL3 ')'
 #define CHRCOL4 '\''
+#define CHRCOL5 '_'
 #define CHRCOL6 '#'
 
 /* These constants will be used on VID / MID function */
@@ -183,6 +221,7 @@ static int transitionTable[NUM_STATES][CHAR_CLASSES] = {
 	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S7: ASNR (COM)
 	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S8: ASNR (ES)
 	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS}  // S9: ASWR (ER)
+
 };
 
 /* Define accepting states types */
@@ -192,17 +231,19 @@ static int transitionTable[NUM_STATES][CHAR_CLASSES] = {
 
 /* TO_DO: Define list of acceptable states */
 static int stateType[NUM_STATES] = {
-	NOFS, /* 00 */
-	NOFS, /* 01 */
-	FSNR, /* 02 (MID) - Methods */
-	FSWR, /* 03 (KEY) */
-	NOFS, /* 04 */
-	FSNR, /* 05 (SL) */
-	NOFS, /* 06 */
-	FSNR, /* 07 (COM) */
-	FSNR, /* 08 (Err1 - no retract) */
-	FSWR  /* 09 (Err2 - retract) */
+	NOFS, /* S0: Start or other non-final states */
+	NOFS, /* S1: ... */
+	FSNR, /* S2: Final State, Method names (MID) - No retract */
+	FSNR, /* S3: Final State, Keywords (KEY) - No retract */
+	NOFS, /* S4: ... */
+	FSNR, /* S5: Final State, String literals (SL) - No retract */
+	NOFS, /* S6: ... */
+	FSNR, /* S7: Final State, Comments (COM) - No retract */
+	FSNR, /* S8: Final State, Error state 1 - No retract */
+	FSWR  /* S9: Final State, Error state 2 - With retract */
+	// Continue with the same logic for all states in your FSM
 };
+
 
 /*
 -------------------------------------------------
@@ -230,6 +271,7 @@ typedef Token(*PTR_ACCFUN)(str lexeme);
 Token funcSL	(str lexeme);
 Token funcIL	(str lexeme);
 Token funcID	(str lexeme);
+Token funcFL    (str lexeme);
 Token funcCMT   (str lexeme);
 Token funcKEY	(str lexeme);
 Token funcErr	(str lexeme);
@@ -260,21 +302,30 @@ Language keywords
 */
 
 /* TO_DO: Define the number of Keywords from the language */
-#define KWT_SIZE 10
 
-/* TO_DO: Define the list of keywords */
+#define KWT_SIZE 16
+
 static str keywordTable[KWT_SIZE] = {
-	"data",		/* KW00 */
-	"code",		/* KW01 */
-	"int",		/* KW02 */
-	"real",		/* KW03 */
-	"string",	/* KW04 */
-	"if",		/* KW05 */
-	"then",		/* KW06 */
-	"else",		/* KW07 */
-	"while",	/* KW08 */
-	"do"		/* KW09 */
+	"def",      // KW00 - Defines a function
+	"class",    // KW01 - Defines a class
+	"if",       // KW02 - Conditional statement
+	"else",     // KW03 - Alternative branch in conditional statements
+	"elif",     // KW04 - Else if branch in conditional statements
+	"for",      // KW05 - For loop
+	"while",    // KW06 - While loop
+	"return",   // KW07 - Returns a value from a function
+	"import",   // KW08 - Imports a module
+	"in",       // KW09 - Membership test operations
+	"break",    // KW10 - Breaks out of the current loop
+	"continue", // KW11 - Continues to the next iteration of the loop
+	"pass",     // KW12 - Null operation, nothing happens when it executes
+	"True",     // KW13 - Boolean True
+	"False",    // KW14 - Boolean False
+	"None",     // KW15 - Represents the absence of a value or a null value
 };
+
+
+
 
 /* NEW SECTION: About indentation */
 
@@ -284,7 +335,7 @@ static str keywordTable[KWT_SIZE] = {
 
 #define INDENT '\t'  /* Tabulation */
 
-/* TO_DO: Should be used if no symbol table is implemented */
+/* TO_DO: Should be used if no symbol table is implemented */;
 typedef struct languageAttributes {
 	Cast_char indentationCharType;
 	int indentationCurrentPos;

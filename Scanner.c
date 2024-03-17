@@ -153,34 +153,46 @@ Token tokenizer(Cast_void) {
 
 		/* Cases for spaces */
 		case ' ':
+
 		case '\t':
-		case '\f':
-			break;
+			line++;  // Increment line counter
+			currentToken.code = INDENT_T;  // NEWLINE_T could be a token representing end of a statement or a newline for formatting
+			scData.scanHistogram[currentToken.code]++;
+			return currentToken;
+			
 		case '\n':
-			line++;
-			break;
+			line++;  // Increment line counter
+			currentToken.code = NEWLINE_T;  // NEWLINE_T could be a token representing end of a statement or a newline for formatting
+			scData.scanHistogram[currentToken.code]++;
+			return currentToken;
 
 		/* Cases for symbols */
-		case ';':
-			currentToken.code = EOS_T;
+
+		
+		case '#':
+			currentToken.code = CMT_T;
 			scData.scanHistogram[currentToken.code]++;
 			return currentToken;
+		
 		case '(':
-			currentToken.code = LPR_T;
-			scData.scanHistogram[currentToken.code]++;
-			return currentToken;
-		case ')':
-			currentToken.code = RPR_T;
-			scData.scanHistogram[currentToken.code]++;
-			return currentToken;
-		case '{':
 			currentToken.code = LBR_T;
 			scData.scanHistogram[currentToken.code]++;
 			return currentToken;
-		case '}':
+		case ')':
 			currentToken.code = RBR_T;
 			scData.scanHistogram[currentToken.code]++;
 			return currentToken;
+		case '{':
+			currentToken.code = LPR_T;
+			scData.scanHistogram[currentToken.code]++;
+			return currentToken;
+		case '}':
+			currentToken.code = RPR_T;
+			scData.scanHistogram[currentToken.code]++;
+			return currentToken;
+
+		
+		 
 		/* Cases for END OF FILE */
 		case CHARSEOF0:
 			currentToken.code = SEOF_T;
@@ -258,7 +270,7 @@ Token tokenizer(Cast_void) {
 	or #undef DEBUG is used - see the top of the file.
  ***********************************************************
  */
- /* TO_DO: Just change the datatypes */
+ /* TO_DO: Just change the datatypes */        /*  DONE */
 
 int nextState(int state, Cast_char c) {
 	int col;
@@ -291,35 +303,46 @@ int nextState(int state, Cast_char c) {
 /*    [A-z],[0-9],    _,    &,   \', SEOF,    #, other
 	   L(0), D(1), U(2), M(3), Q(4), E(5), C(6),  O(7) */
 
+	   /* Adjust the logic to return the next column in TT */
+	   /*    [A-z],[0-9],    _,    B10=(,   Q(',    B1C=),    X, N, P */
+
 int nextClass(Cast_char c) {
 	int val = -1;
-	switch (c) {
-	case CHRCOL2:
-		val = 2;
-		break;
-	case CHRCOL3:
-		val = 3;
-		break;
-	case CHRCOL4:
-		val = 4;
-		break;
-	case CHRCOL6:
-		val = 6;
-		break;
-	case CHARSEOF0:
-	case CHARSEOF255:
-		val = 5;
-		break;
-	default:
-		if (isalpha(c))
-			val = 0;
-		else if (isdigit(c))
-			val = 1;
-		else
+
+	if (isalpha(c)) { // [A-z]
+		val = 0;
+	}
+	else if (isdigit(c)) { // [0-9]
+		val = 1;
+	}
+	else {
+		switch (c) {
+		case CHRCOL5: // '_'
+			val = 2;
+			break;
+		case CHRCOL2: // '('
+			val = 3;
+			break;
+		case CHRCOL4: // '\''
+			val = 4;
+			break;
+		case CHRCOL3: // ')'
+			val = 6;
+			break;
+		case CHARSEOF0:
+		case CHARSEOF255:
+			val = 5; // End of File
+			break;
+		case CHRCOL6: // '#'
+			val = 7; // 'N' column in your table
+			break;
+		default: // All other characters (could be the 'P' column or others depending on your table)
 			val = 7;
+		}
 	}
 	return val;
 }
+
 
 /*
  ************************************************************
@@ -327,7 +350,7 @@ int nextClass(Cast_char c) {
  *		Function responsible to identify COM (comments).
  ***********************************************************
  */
- /* TO_DO: Adjust the function for IL */
+                                                           /* H(^N)*N*/
 
 Token funcCMT(str lexeme) {
 	Token currentToken = { 0 };
@@ -342,78 +365,126 @@ Token funcCMT(str lexeme) {
 	return currentToken;
 }
 
-
  /*
-  ************************************************************
-  * Acceptance State Function IL
-  *		Function responsible to identify IL (integer literals).
-  * - It is necessary respect the limit (ex: 2-byte integer in C).
-  * - In the case of larger lexemes, error shoul be returned.
-  * - Only first ERR_LEN characters are accepted and eventually,
-  *   additional three dots (...) should be put in the output.
-  ***********************************************************
-  */
-  /* TO_DO: Adjust the function for IL */
+************************************************************
+* Acceptance State Function IL
+*    Function responsible for identifying IL (integer literals).
+* - It is necessary to respect the limit (e.g., the range of 'short' in C).
+* - In the case of lexemes representing larger values, an error should be returned.
+* - Only the first ERR_LEN characters are accepted, and if necessary,
+*   additional three dots (...) should be appended.
+************************************************************
+*/
+
+/* TO_DO: Adjust the function for IL */                         /*D+*/
 
 Token funcIL(str lexeme) {
 	Token currentToken = { 0 };
-	Cast_long tlong;
-	if (lexeme[0] != '\0' && strlen(lexeme) > NUM_LEN) {
-		currentToken = (*finalStateTable[ESNR])(lexeme);
-	}
-	else {
-		tlong = atol(lexeme);
-		if (tlong >= 0 && tlong <= SHRT_MAX) {
-			currentToken.code = IN_T;
-			scData.scanHistogram[currentToken.code]++;
-			currentToken.attribute.intValue = (int)tlong;
+	long tlong; // Assuming Cast_long is defined as 'long'
+	char* endptr; // Pointer to character following the parsed integer
+
+	// strtol allows to check if we consumed the entire string and also performs range checking
+	tlong = strtol(lexeme, &endptr, 10);
+
+	// Check if we consumed the entire string and didn't go out of range
+	if (*endptr == '\0' && lexeme[0] != '\0') {
+		if (tlong <= SHRT_MAX && tlong >= SHRT_MIN) {
+			currentToken.code = IN_T; // Assuming IN_T is the token code for integer literals
+			scData.scanHistogram[currentToken.code]++; // Increment the histogram for this token
+			currentToken.attribute.intValue = (short)tlong; // Cast to short to fit the assumed integer range
 		}
 		else {
-			currentToken = (*finalStateTable[ESNR])(lexeme);
+			// Handle overflow here
+			currentToken = (*finalStateTable[ESNR])(lexeme); // Assuming ESNR handles errors with no retraction
 		}
+	}
+	else {
+		// If the string was not consumed completely, then it's an error (e.g., "123abc")
+		currentToken = (*finalStateTable[ESNR])(lexeme); // Handle errors with no retraction
 	}
 	return currentToken;
 }
 
-
+/*____________________________________________________________________________*/
 /*
  ************************************************************
  * Acceptance State Function ID
- *		In this function, the pattern for IDs must be recognized.
- *		Since keywords obey the same pattern, is required to test if
- *		the current lexeme matches with KW from language.
- *	- Remember to respect the limit defined for lexemes (VID_LEN) and
- *	  set the lexeme to the corresponding attribute (vidLexeme).
- *    Remember to end each token with the \0.
- *  - Suggestion: Use "strncpy" function.
+ *    Function responsible for identifying method names and keywords.
+ *    This function checks if the lexeme represents a method (with a specific suffix) or a keyword.
+ *    Keywords are checked after removing the potential method name suffix.
+ *    If the lexeme is neither a method nor a keyword, it's processed as an error (assuming all valid identifiers are keywords or method names).
  ***********************************************************
  */
- /* TO_DO: Adjust the function for ID */
-
 Token funcID(str lexeme) {
-	Token currentToken = { 0 };
-	size_t length = strlen(lexeme);
-	Cast_char lastch = lexeme[length - 1];
-	int isID = False;
-	switch (lastch) {
-		case MNID_SUF:
-			currentToken.code = MNID_T;
-			scData.scanHistogram[currentToken.code]++;
-			isID = True;
-			break;
-		default:
-			// Test Keyword
-			lexeme[length - 1] = '\0';
-			currentToken = funcKEY(lexeme);
-			break;
+	Token currentToken = { 0 };  // Initialize the current token with default values.
+	size_t length = strlen(lexeme);  // Get the length of the lexeme.
+
+	// Check if the lexeme potentially represents a method name with the specific suffix.
+	if (lexeme[length - 1] == MNID_SUF) {
+		// Temporarily remove the method name suffix to check if the remaining part matches a keyword.
+		lexeme[length - 1] = '\0';
+		currentToken = funcKEY(lexeme);  // Check if the lexeme matches any keywords.
+		lexeme[length - 1] = MNID_SUF;  // Restore the method name suffix.
+
+		// If the lexeme doesn't match a keyword, it's treated as a method name.
+		if (currentToken.code != KW_T) {
+			currentToken.code = MNID_T;  // Set the token type to method name identifier.
+			scData.scanHistogram[currentToken.code]++;  // Update the histogram count for this token type.
+			strncpy(currentToken.attribute.idLexeme, lexeme, VID_LEN);  // Copy the lexeme to the token's attribute.
+			currentToken.attribute.idLexeme[VID_LEN] = '\0';  // Ensure the copied lexeme is null-terminated.
+		}
+		// If it was a keyword, funcKEY has already set the correct token attributes.
 	}
-	if (isID == True) {
-		strncpy(currentToken.attribute.idLexeme, lexeme, VID_LEN);
-		currentToken.attribute.idLexeme[VID_LEN] = CHARSEOF0;
+	else {
+		// If the lexeme doesn't end with the method name suffix, treat it as a potential keyword.
+		currentToken = funcKEY(lexeme);
+
+		// If funcKEY couldn't match it to a keyword, it's an undefined identifier/error.
+		if (currentToken.code == ERR_T) {
+			// Handling of undefined identifiers can be added here if necessary.
+		}
 	}
+
 	return currentToken;
 }
 
+
+
+
+
+/*___________________________________________________________________________________*/
+
+/*
+ ***********************************************************
+ * Acceptance State Function FL
+ * Function responsible to identify FL (floating-point literals).
+ * Pattern: D+PD* | D*PD+
+ * D+PD* - one or more digits, followed by a period, followed by zero or more digits
+ * D*PD+ - zero or more digits, followed by a period, followed by one or more digits
+ ***********************************************************
+ */
+Token funcFL(str lexeme) {
+	Token currentToken = { 0 };  // Initialize token.
+	currentToken.code = FL_T;  // Set the token code for a float literal.
+
+	char* endptr;
+	double value = strtod(lexeme, &endptr);
+
+	// Validate if the lexeme is a proper float literal after conversion
+	if (*endptr == '\0' && endptr != lexeme) { // Ensure the whole lexeme was a valid float literal
+		currentToken.attribute.floatValue = value;
+	}
+	else {
+		// Lexeme is not a valid float literal
+		currentToken.code = ERR_T;
+		strncpy(currentToken.attribute.errLexeme, lexeme, ERR_LEN); // Store the erroneous lexeme
+		currentToken.attribute.errLexeme[ERR_LEN] = '\0'; // Ensure null-termination
+	}
+
+	return currentToken;  // Return the token with its set attributes
+}
+
+/*________________________________________________________________________________________*/
 
 /*
 ************************************************************
@@ -425,7 +496,7 @@ Token funcID(str lexeme) {
  *   separate the lexemes. Remember also to incremente the line.
  ***********************************************************
  */
-/* TO_DO: Adjust the function for SL */
+/* TO_DO: Adjust the function for SL */              /* Q(H|N|L|D|P)*Q */
 
 Token funcSL(str lexeme) {
 	Token currentToken = { 0 };
@@ -454,33 +525,39 @@ Token funcSL(str lexeme) {
 	return currentToken;
 }
 
+/*____________________________________________________________________________________________*/
 
 /*
 ************************************************************
- * This function checks if one specific lexeme is a keyword.
- * - Tip: Remember to use the keywordTable to check the keywords.
- ***********************************************************
- */
- /* TO_DO: Adjust the function for Keywords */
+* This function checks if one specific lexeme is a keyword.
+* - Tip: Remember to use the keywordTable to check the keywords.
+***********************************************************
+*/
+/* TO_DO: Adjust the function for Keywords */
 
 Token funcKEY(str lexeme) {
 	Token currentToken = { 0 };
-	int kwindex = -1, j = 0;
-	int len = (int)strlen(lexeme);
-	lexeme[len - 1] = '\0';
-	for (j = 0; j < KWT_SIZE; j++)
-		if (!strcmp(lexeme, &keywordTable[j][0]))
+	int kwindex = -1;
+	for (int j = 0; j < KWT_SIZE; j++) {
+		if (!strcmp(lexeme, keywordTable[j])) {
 			kwindex = j;
+			break; // Found a matching keyword, no need to continue the loop
+		}
+	}
 	if (kwindex != -1) {
 		currentToken.code = KW_T;
 		scData.scanHistogram[currentToken.code]++;
 		currentToken.attribute.codeType = kwindex;
 	}
 	else {
+		// If not found in the keyword list, it's not a keyword.
+		// Depending on design,may handle this differently.
+		// For instance, it could be an identifier, or might have a specific error handling.
 		currentToken = funcErr(lexeme);
 	}
 	return currentToken;
 }
+
 
 
 /*
@@ -514,6 +591,7 @@ Token funcErr(str lexeme) {
 	return currentToken;
 }
 
+/*_______________________________________________________________________________________________*/
 
 /*
  ************************************************************
@@ -522,29 +600,30 @@ Token funcErr(str lexeme) {
  */
 
 Cast_void printToken(Token t) {
-	extern str keywordTable[]; /* link to keyword table in */
+	extern str keywordTable[]; // Link to keyword table
+	
 	switch (t.code) {
 	case RTE_T:
-		printf("RTE_T\t\t%s", t.attribute.errLexeme);
-		/* Call here run-time error handling component */
+		printf("RTE_T\t\t%s\n", t.attribute.errLexeme);
 		if (errorNumber) {
-			printf("%d", errorNumber);
+			printf("%d\n", errorNumber);
 			exit(errorNumber);
 		}
-		printf("\n");
 		break;
 	case ERR_T:
 		printf("ERR_T\t\t%s\n", t.attribute.errLexeme);
 		break;
 	case SEOF_T:
-		printf("SEOF_T\t\t%d\t\n", t.attribute.seofType);
+		printf("SEOF_T\t\t%d\n", t.attribute.seofType);
 		break;
 	case MNID_T:
 		printf("MNID_T\t\t%s\n", t.attribute.idLexeme);
 		break;
 	case STRL_T:
-		printf("STR_T\t\t%d\t ", (int)t.attribute.codeType);
-		printf("%s\n", readerGetContent(stringLiteralTable, (int)t.attribute.codeType));
+		printf("STR_T\t\t%d\t%s\n", (int)t.attribute.codeType, readerGetContent(stringLiteralTable, (int)t.attribute.codeType));
+		break;
+	case FL_T: 
+		printf("FL_T\t\t%f\n", t.attribute.floatValue);
 		break;
 	case LPR_T:
 		printf("LPR_T\n");
@@ -564,14 +643,24 @@ Cast_void printToken(Token t) {
 	case CMT_T:
 		printf("CMT_T\n");
 		break;
-	case EOS_T:
-		printf("EOS_T\n");
+	case INDENT_T:
+		printf("INDENT_T\n");
 		break;
-	default:
+	case NEWLINE_T:
+		printf("NEWLINE_T\n");
+		break;
+	 default:
 		printf("Scanner error: invalid token code: %d\n", t.code);
+
+
 	}
 }
 
+
+
+
+
+/*___________________________________________________________________________________________________*/
 /*
  ************************************************************
  * The function prints statistics of tokens
@@ -596,3 +685,5 @@ Cast_void printScannerData(ScannerData scData) {
 /*
 TO_DO: (If necessary): HERE YOU WRITE YOUR ADDITIONAL FUNCTIONS (IF ANY).
 */
+
+
