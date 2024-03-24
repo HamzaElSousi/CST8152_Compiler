@@ -156,7 +156,7 @@ Token tokenizer(Cast_void) {
 
 		case '\t':
 			line++;  // Increment line counter
-			currentToken.code = INDENT_T;  // NEWLINE_T could be a token representing end of a statement or a newline for formatting
+			currentToken.code = NDENT_T;  // NEWLINE_T could be a token representing end of a statement or a newline for formatting
 			scData.scanHistogram[currentToken.code]++;
 			return currentToken;
 			
@@ -643,8 +643,8 @@ Cast_void printToken(Token t) {
 	case CMT_T:
 		printf("CMT_T\n");
 		break;
-	case INDENT_T:
-		printf("INDENT_T\n");
+	case NDENT_T:
+		printf("NDENT_T\n");
 		break;
 	case NEWLINE_T:
 		printf("NEWLINE_T\n");

@@ -72,12 +72,13 @@ enum TOKENS {
 	RPR_T,	    /*  5: Right parenthesis token */
 	LBR_T,	    /*  6: Left brace token */
 	RBR_T,	    /*  7: Right brace token */
-	NEWLINE_T,  /* 9: New line token */
-	KW_T,		/*  8: Keyword token */
+	NEWLINE_T,  /*  8: New line token */
+	KW_T,		/*  9: Keyword token */
 	RTE_T,		/* 10: Run-time error token */
 	SEOF_T,		/* 11: Source end-of-file token */
 	CMT_T,		/* 12: Comment token */
-	INDENT_T,   /* 7: Indentation increase token */
+	NDENT_T,   /* 13: Indentation increase token */
+	PERIOD_T,    /*14: Period (.) token */
 	
 
 	
@@ -100,7 +101,8 @@ static str tokenStrTable[NUM_TOKENS] = {
 	"RTE_T",
 	"SEOF_T",
 	"CMT_T",
-	"INDENT_T",
+	"NDENT_T",
+	"PERIOD_T",
 	
 };
 
@@ -193,6 +195,13 @@ typedef struct scannerData {
 #define CHRCOL4 '\''
 #define CHRCOL5 '_'
 #define CHRCOL6 '#'
+#define CHRCOL7 '['
+#define CHRCOL8 ']'
+#define CHRCOL9 '{'
+#define CHRCOL10 '}'
+#define CHRCOL11 ':'
+#define CHRCOL12 ','
+#define CHRCOL13 '.'
 
 /* These constants will be used on VID / MID function */
 #define MNID_SUF '_'
