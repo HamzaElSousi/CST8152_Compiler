@@ -91,7 +91,7 @@ static BufferPointer sourceBuffer;			/* Pointer to input source buffer */
  *		This function initializes the scanner using defensive programming.
  ***********************************************************
  */
- /* TO_DO: Follow the standard and adjust datatypes */   /*ok*/
+ /* TO_DO: Follow the standard and adjust datatypes */           ///////*ok*/////////
 
 int startScanner(BufferPointer psc_buf) {
 	if (psc_buf == NULL) {
@@ -153,44 +153,56 @@ Token tokenizer(Cast_void) {
 
 		/* Cases for spaces */
 		case ' ':
-
 		case '\t':
-			line++;  // Increment line counter
-			currentToken.code = NDENT_T;  // NEWLINE_T could be a token representing end of a statement or a newline for formatting
+			// Adjusted comment to reflect the actual token being generated
+			// Spaces and tabs typically don't directly generate INDENT tokens unless at the start of a line
+			// and contributing to a change in indentation level. However, sticking to your constraints:
+			currentToken.code = INDENT_T; // Consider adjusting this logic to more accurately reflect indentation handling
 			scData.scanHistogram[currentToken.code]++;
 			return currentToken;
 			
 		case '\n':
-			line++;  // Increment line counter
-			currentToken.code = NEWLINE_T;  // NEWLINE_T could be a token representing end of a statement or a newline for formatting
+			line++;  // Increment line counter correctly for newlines
+			// NEWLINE_T is correct for representing the end of a line/statement in many contexts
+			currentToken.code = NEWLINE_T;
 			scData.scanHistogram[currentToken.code]++;
 			return currentToken;
 
 		/* Cases for symbols */
 
 		
+		/* Cases for symbols */
+
 		case '#':
-			currentToken.code = CMT_T;
-			scData.scanHistogram[currentToken.code]++;
-			return currentToken;
-		
-		case '(':
-			currentToken.code = LBR_T;
-			scData.scanHistogram[currentToken.code]++;
-			return currentToken;
-		case ')':
-			currentToken.code = RBR_T;
-			scData.scanHistogram[currentToken.code]++;
-			return currentToken;
-		case '{':
-			currentToken.code = LPR_T;
-			scData.scanHistogram[currentToken.code]++;
-			return currentToken;
-		case '}':
-			currentToken.code = RPR_T;
+			currentToken.code = CMT_T; // Comment token
 			scData.scanHistogram[currentToken.code]++;
 			return currentToken;
 
+		case '(':
+			currentToken.code = LPR_T; // Left Parenthesis token
+			scData.scanHistogram[currentToken.code]++;
+			return currentToken;
+
+		case ')':
+			currentToken.code = RPR_T; // Right Parenthesis token
+			scData.scanHistogram[currentToken.code]++;
+			return currentToken;
+
+		case '{':
+			currentToken.code = LBR_T; // Left Brace token
+			scData.scanHistogram[currentToken.code]++;
+			return currentToken;
+
+		case '}':
+			currentToken.code = RBR_T; // Right Brace token
+			scData.scanHistogram[currentToken.code]++;
+			return currentToken;
+		
+		
+		case '.':
+			currentToken.code = PERIOD_T; // Period token, often used for object attributes or float literals
+			scData.scanHistogram[currentToken.code]++;
+			return currentToken;
 		
 		 
 		/* Cases for END OF FILE */
@@ -217,27 +229,32 @@ Token tokenizer(Cast_void) {
 			state = nextState(state, c);
 			lexStart = readerGetPosRead(sourceBuffer) - 1;
 			readerSetMark(sourceBuffer, lexStart);
-			int pos = 0;
 			while (stateType[state] == NOFS) {
 				c = readerGetChar(sourceBuffer);
 				state = nextState(state, c);
-				pos++;
 			}
-			if (stateType[state] == FSWR)
-				readerRetract(sourceBuffer);
+			if (stateType[state] == FSWR) {
+				readerRetract(sourceBuffer); // Retract if the state requires it
+			}
 			lexEnd = readerGetPosRead(sourceBuffer);
-			lexLength = lexEnd - lexStart;
-			lexemeBuffer = readerCreate((int)lexLength + 2, 0, MODE_FIXED);
+			lexLength = lexEnd - lexStart; // Calculate the lexeme length
+
+			// Create a buffer for the lexeme
+			lexemeBuffer = readerCreate(lexLength + 1, 0, MODE_FIXED); // Adding 1 for the terminator
 			if (!lexemeBuffer) {
-				fprintf(stderr, "Scanner error: Can not create buffer\n");
-				exit(1);
+				fprintf(stderr, "Scanner error: Cannot create buffer\n");
+				exit(EXIT_FAILURE); // Use a standardized exit code
 			}
-			readerRestore(sourceBuffer);
-			for (i = 0; i < lexLength; i++)
-				readerAddChar(lexemeBuffer, readerGetChar(sourceBuffer));
-			readerAddChar(lexemeBuffer, READER_TERMINATOR);
+
+			readerRestore(sourceBuffer); // Restore buffer to the start of the lexeme
+			for (int i = 0; i < lexLength; i++) {
+				readerAddChar(lexemeBuffer, readerGetChar(sourceBuffer)); // Copy lexeme
+			}
+			readerAddChar(lexemeBuffer, '\0'); // Assuming READER_TERMINATOR is '\0'
+
+			// Create the final token using the function corresponding to the final state
 			currentToken = (*finalStateTable[state])(readerGetContent(lexemeBuffer, 0));
-			readerRestore(lexemeBuffer); //xxx
+			readerFree(lexemeBuffer); // Assuming a function to free the buffer
 			return currentToken;
 		} // switch
 
@@ -299,14 +316,11 @@ int nextState(int state, Cast_char c) {
  */
 /* TO_DO: Use your column configuration */
 
-/* Adjust the logic to return next column in TT */
-/*    [A-z],[0-9],    _,    &,   \', SEOF,    #, other
-	   L(0), D(1), U(2), M(3), Q(4), E(5), C(6),  O(7) */
 
 	   /* Adjust the logic to return the next column in TT */
 	   /*    [A-z],[0-9],    _,    B10=(,   Q(',    B1C=),    X, N, P */
 
-int nextClass(Cast_char c) {
+int nextClass(char c) {
 	int val = -1;
 
 	if (isalpha(c)) { // [A-z]
@@ -327,21 +341,33 @@ int nextClass(Cast_char c) {
 			val = 4;
 			break;
 		case CHRCOL3: // ')'
-			val = 6;
+			val = 5;
 			break;
 		case CHARSEOF0:
 		case CHARSEOF255:
-			val = 5; // End of File
+			val = 5; // End of File; assuming the same column as ')'
 			break;
 		case CHRCOL6: // '#'
-			val = 7; // 'N' column in your table
+			val = 7; // Assuming column 7 for comments
 			break;
-		default: // All other characters (could be the 'P' column or others depending on your table)
-			val = 7;
+		case CHRCOL13: // '.'
+			val = 7; // Assuming column 7 for periods
+			break;
+		case CHRCOL7: // '['
+		case CHRCOL8: // ']'
+		case CHRCOL9: // '{'
+		case CHRCOL10: // '}'
+		case CHRCOL11: // ':'
+		case CHRCOL12: // ','
+			val = 8; // Assuming other characters are in column 8
+			break;
+		default:
+			val = 8; // All other characters
 		}
 	}
 	return val;
 }
+
 
 
 /*
@@ -377,10 +403,9 @@ Token funcCMT(str lexeme) {
 */
 
 /* TO_DO: Adjust the function for IL */                         /*D+*/
-
 Token funcIL(str lexeme) {
 	Token currentToken = { 0 };
-	long tlong; // Assuming Cast_long is defined as 'long'
+	long tlong; // Using long to accommodate larger-than-short values
 	char* endptr; // Pointer to character following the parsed integer
 
 	// strtol allows to check if we consumed the entire string and also performs range checking
@@ -389,21 +414,26 @@ Token funcIL(str lexeme) {
 	// Check if we consumed the entire string and didn't go out of range
 	if (*endptr == '\0' && lexeme[0] != '\0') {
 		if (tlong <= SHRT_MAX && tlong >= SHRT_MIN) {
-			currentToken.code = IN_T; // Assuming IN_T is the token code for integer literals
-			scData.scanHistogram[currentToken.code]++; // Increment the histogram for this token
-			currentToken.attribute.intValue = (short)tlong; // Cast to short to fit the assumed integer range
+			currentToken.code = IN_T; // Token code for integer literals
+			scData.scanHistogram[currentToken.code]++;
+			currentToken.attribute.intValue = (short)tlong;
 		}
 		else {
-			// Handle overflow here
-			currentToken = (*finalStateTable[ESNR])(lexeme); // Assuming ESNR handles errors with no retraction
+			// Handle integer overflow by capturing only the first ERR_LEN characters
+			strncpy(currentToken.attribute.errLexeme, lexeme, ERR_LEN);
+			currentToken.attribute.errLexeme[ERR_LEN - 1] = '\0'; // Ensuring null-termination
+			currentToken.code = ERR_T; // Token code for errors
 		}
 	}
 	else {
 		// If the string was not consumed completely, then it's an error (e.g., "123abc")
-		currentToken = (*finalStateTable[ESNR])(lexeme); // Handle errors with no retraction
+		strncpy(currentToken.attribute.errLexeme, lexeme, ERR_LEN);
+		currentToken.attribute.errLexeme[ERR_LEN - 1] = '\0'; // Ensuring null-termination
+		currentToken.code = ERR_T; // Token code for errors
 	}
 	return currentToken;
 }
+
 
 /*____________________________________________________________________________*/
 /*
@@ -416,22 +446,22 @@ Token funcIL(str lexeme) {
  ***********************************************************
  */
 Token funcID(str lexeme) {
-	Token currentToken = { 0 };  // Initialize the current token with default values.
-	size_t length = strlen(lexeme);  // Get the length of the lexeme.
+	Token currentToken = { 0 }; // Initialize the current token with default values.
+	size_t length = strlen(lexeme); // Get the length of the lexeme.
 
 	// Check if the lexeme potentially represents a method name with the specific suffix.
-	if (lexeme[length - 1] == MNID_SUF) {
+	if (length > 0 && lexeme[length - 1] == MNID_SUF) {
 		// Temporarily remove the method name suffix to check if the remaining part matches a keyword.
 		lexeme[length - 1] = '\0';
-		currentToken = funcKEY(lexeme);  // Check if the lexeme matches any keywords.
-		lexeme[length - 1] = MNID_SUF;  // Restore the method name suffix.
+		currentToken = funcKEY(lexeme); // Check if the lexeme matches any keywords.
+		lexeme[length - 1] = MNID_SUF; // Restore the method name suffix.
 
 		// If the lexeme doesn't match a keyword, it's treated as a method name.
 		if (currentToken.code != KW_T) {
-			currentToken.code = MNID_T;  // Set the token type to method name identifier.
-			scData.scanHistogram[currentToken.code]++;  // Update the histogram count for this token type.
-			strncpy(currentToken.attribute.idLexeme, lexeme, VID_LEN);  // Copy the lexeme to the token's attribute.
-			currentToken.attribute.idLexeme[VID_LEN] = '\0';  // Ensure the copied lexeme is null-terminated.
+			currentToken.code = MNID_T; // Set the token type to method name identifier.
+			// Ensure the lexeme is not longer than VID_LEN
+			strncpy(currentToken.attribute.idLexeme, lexeme, VID_LEN);
+			currentToken.attribute.idLexeme[VID_LEN] = '\0'; // Ensure the lexeme is null-terminated.
 		}
 		// If it was a keyword, funcKEY has already set the correct token attributes.
 	}
@@ -439,14 +469,22 @@ Token funcID(str lexeme) {
 		// If the lexeme doesn't end with the method name suffix, treat it as a potential keyword.
 		currentToken = funcKEY(lexeme);
 
-		// If funcKEY couldn't match it to a keyword, it's an undefined identifier/error.
-		if (currentToken.code == ERR_T) {
-			// Handling of undefined identifiers can be added here if necessary.
+		// If funcKEY couldn't match it to a keyword, treat it as an error.
+		if (currentToken.code != KW_T) {
+			currentToken.code = ERR_T; // Assuming ERR_T is the token code for errors.
+			strncpy(currentToken.attribute.errLexeme, lexeme, ERR_LEN);
+			currentToken.attribute.errLexeme[ERR_LEN] = '\0'; // Ensure the error lexeme is null-terminated.
 		}
+	}
+
+	// Update the histogram for method names and errors.
+	if (currentToken.code == MNID_T || currentToken.code == ERR_T) {
+		scData.scanHistogram[currentToken.code]++;
 	}
 
 	return currentToken;
 }
+
 
 
 
@@ -465,24 +503,31 @@ Token funcID(str lexeme) {
  */
 Token funcFL(str lexeme) {
 	Token currentToken = { 0 };  // Initialize token.
-	currentToken.code = FL_T;  // Set the token code for a float literal.
+	currentToken.code = FL_T;  // Assuming FL_T is the token code for floating literals.
 
 	char* endptr;
 	double value = strtod(lexeme, &endptr);
 
-	// Validate if the lexeme is a proper float literal after conversion
-	if (*endptr == '\0' && endptr != lexeme) { // Ensure the whole lexeme was a valid float literal
-		currentToken.attribute.floatValue = value;
+	// Check if the lexeme is a proper float literal after conversion
+	// Ensure the whole lexeme was a valid float literal and not just a part of it
+	if (*endptr == '\0' && endptr != lexeme) {
+		currentToken.attribute.floatValue = value;  // Store the converted float value
 	}
 	else {
-		// Lexeme is not a valid float literal
-		currentToken.code = ERR_T;
-		strncpy(currentToken.attribute.errLexeme, lexeme, ERR_LEN); // Store the erroneous lexeme
-		currentToken.attribute.errLexeme[ERR_LEN] = '\0'; // Ensure null-termination
+		// If the lexeme is not a valid float literal, handle it as an error
+		currentToken.code = ERR_T;  // Assuming ERR_T is the token code for errors.
+		// Capture only the first ERR_LEN characters of the lexeme to report the error
+		strncpy(currentToken.attribute.errLexeme, lexeme, ERR_LEN - 1);
+		currentToken.attribute.errLexeme[ERR_LEN - 1] = '\0'; // Ensure null-termination
+		if (strlen(lexeme) > ERR_LEN - 1) {
+			// If the lexeme is longer than ERR_LEN - 1, append "..." to indicate truncation
+			strcat(currentToken.attribute.errLexeme, "...");
+		}
 	}
 
 	return currentToken;  // Return the token with its set attributes
 }
+
 
 /*________________________________________________________________________________________*/
 
@@ -500,30 +545,42 @@ Token funcFL(str lexeme) {
 
 Token funcSL(str lexeme) {
 	Token currentToken = { 0 };
-	int i = 0, len = (int)strlen(lexeme);
-	currentToken.attribute.contentString = readerGetPosWrte(stringLiteralTable);
-	for (i = 1; i < len - 1; i++) {
-		if (lexeme[i] == '\n')
-			line++;
-		if (!readerAddChar(stringLiteralTable, lexeme[i])) {
-			currentToken.code = RTE_T;
+	int len = (int)strlen(lexeme);
+
+	// Assume the lexeme includes the quotation marks, so start and end inside them
+	currentToken.attribute.contentString = readerGetPosWrte(stringLiteralTable); // Get current write position
+
+	for (int i = 1; i < len - 1; i++) { // Skip the initial and final quotation marks
+		if (lexeme[i] == '\n') {
+			line++; // Increment line counter for each newline character within the string
+		}
+		if (!readerAddChar(stringLiteralTable, lexeme[i])) { // Attempt to add each character
+			// On failure to add a character, set the token to a run-time error
+			currentToken.code = RTE_T; // Assuming RTE_T is the token code for runtime errors
 			scData.scanHistogram[currentToken.code]++;
-			strcpy(currentToken.attribute.errLexeme, "Run Time Error:");
-			errorNumber = RTE_CODE;
+			strncpy(currentToken.attribute.errLexeme, "Run Time Error:", ERR_LEN);
+			currentToken.attribute.errLexeme[ERR_LEN] = '\0'; // Ensure null-termination
+			errorNumber = RTE_CODE; // Assuming RTE_CODE represents the specific error number for this scenario
 			return currentToken;
 		}
 	}
-	if (!readerAddChar(stringLiteralTable, CHARSEOF0)) {
+	if (!readerAddChar(stringLiteralTable, '\0')) { // Ensure separation of lexemes with \0
+		// Handle potential error for adding separator
 		currentToken.code = RTE_T;
 		scData.scanHistogram[currentToken.code]++;
-		strcpy(currentToken.attribute.errLexeme, "Run Time Error:");
+		strncpy(currentToken.attribute.errLexeme, "Run Time Error:", ERR_LEN);
+		currentToken.attribute.errLexeme[ERR_LEN] = '\0'; // Ensure null-termination
 		errorNumber = RTE_CODE;
 		return currentToken;
 	}
-	currentToken.code = STRL_T;
+
+	// On successful addition of the lexeme (excluding the quotation marks) to the table
+	currentToken.code = STRL_T; // Assuming STRL_T is the token code for string literals
 	scData.scanHistogram[currentToken.code]++;
-	return currentToken;
+
+	return currentToken; // Return the token with its set attributes
 }
+
 
 /*____________________________________________________________________________________________*/
 
@@ -538,25 +595,29 @@ Token funcSL(str lexeme) {
 Token funcKEY(str lexeme) {
 	Token currentToken = { 0 };
 	int kwindex = -1;
+
+	// Search the keyword table for a matching lexeme
 	for (int j = 0; j < KWT_SIZE; j++) {
-		if (!strcmp(lexeme, keywordTable[j])) {
+		if (strcmp(lexeme, keywordTable[j]) == 0) {
 			kwindex = j;
-			break; // Found a matching keyword, no need to continue the loop
+			break; // Found a matching keyword
 		}
 	}
+
 	if (kwindex != -1) {
-		currentToken.code = KW_T;
+		// Lexeme matches a keyword
+		currentToken.code = KW_T; // Assuming KW_T is the token code for keywords
 		scData.scanHistogram[currentToken.code]++;
-		currentToken.attribute.codeType = kwindex;
+		currentToken.attribute.keywordIndex = kwindex; // Store the index of the keyword
 	}
 	else {
-		// If not found in the keyword list, it's not a keyword.
-		// Depending on design,may handle this differently.
-		// For instance, it could be an identifier, or might have a specific error handling.
-		currentToken = funcErr(lexeme);
+		// Lexeme did not match any keyword
+		currentToken = funcErr(lexeme); // Handle as an error or an identifier
 	}
+
 	return currentToken;
 }
+
 
 
 
@@ -599,14 +660,14 @@ Token funcErr(str lexeme) {
  ***********************************************************
  */
 
-Cast_void printToken(Token t) {
-	extern str keywordTable[]; // Link to keyword table
-	
+void printToken(Token t) {
+	extern str keywordTable[]; // Assuming this links to your keyword table
+
 	switch (t.code) {
 	case RTE_T:
 		printf("RTE_T\t\t%s\n", t.attribute.errLexeme);
 		if (errorNumber) {
-			printf("%d\n", errorNumber);
+			printf("Run-time error number: %d\n", errorNumber);
 			exit(errorNumber);
 		}
 		break;
@@ -614,47 +675,50 @@ Cast_void printToken(Token t) {
 		printf("ERR_T\t\t%s\n", t.attribute.errLexeme);
 		break;
 	case SEOF_T:
-		printf("SEOF_T\t\t%d\n", t.attribute.seofType);
+		printf("SEOF_T\n");
 		break;
 	case MNID_T:
 		printf("MNID_T\t\t%s\n", t.attribute.idLexeme);
 		break;
 	case STRL_T:
-		printf("STR_T\t\t%d\t%s\n", (int)t.attribute.codeType, readerGetContent(stringLiteralTable, (int)t.attribute.codeType));
+		// Assuming readerGetContent function returns a pointer to the string in the String Literal Table at the given offset
+		printf("STRL_T\t\t\"%s\"\n", readerGetContent(stringLiteralTable, t.attribute.contentString));
 		break;
-	case FL_T: 
+	case FL_T:
 		printf("FL_T\t\t%f\n", t.attribute.floatValue);
 		break;
 	case LPR_T:
-		printf("LPR_T\n");
+		printf("LPR_T\t\t'('\n");
 		break;
 	case RPR_T:
-		printf("RPR_T\n");
+		printf("RPR_T\t\t')'\n");
 		break;
 	case LBR_T:
-		printf("LBR_T\n");
+		printf("LBR_T\t\t'{'\n");
 		break;
 	case RBR_T:
-		printf("RBR_T\n");
+		printf("RBR_T\t\t'}'\n");
 		break;
 	case KW_T:
-		printf("KW_T\t\t%s\n", keywordTable[t.attribute.codeType]);
+		printf("KW_T\t\t%s\n", keywordTable[t.attribute.keywordIndex]);
 		break;
 	case CMT_T:
 		printf("CMT_T\n");
 		break;
-	case NDENT_T:
-		printf("NDENT_T\n");
+	case INDENT_T:
+		printf("INDENT_T\n");
 		break;
 	case NEWLINE_T:
 		printf("NEWLINE_T\n");
 		break;
-	 default:
-		printf("Scanner error: invalid token code: %d\n", t.code);
-
-
+	case PERIOD_T:
+		printf("PERIOD_T\t\t'.'\n");
+		break;
+	default:
+		printf("Scanner error: Invalid token code: %d\n", t.code);
 	}
 }
+
 
 
 

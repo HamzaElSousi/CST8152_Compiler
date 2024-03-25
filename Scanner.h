@@ -77,7 +77,7 @@ enum TOKENS {
 	RTE_T,		/* 10: Run-time error token */
 	SEOF_T,		/* 11: Source end-of-file token */
 	CMT_T,		/* 12: Comment token */
-	NDENT_T,   /* 13: Indentation increase token */
+	INDENT_T,   /* 13: Indentation increase token */
 	PERIOD_T,    /*14: Period (.) token */
 	
 
@@ -101,7 +101,7 @@ static str tokenStrTable[NUM_TOKENS] = {
 	"RTE_T",
 	"SEOF_T",
 	"CMT_T",
-	"NDENT_T",
+	"INDENT_T",
 	"PERIOD_T",
 	
 };
@@ -213,25 +213,28 @@ typedef struct scannerData {
 #define FS		10		/* Illegal state */
 
  /* TO_DO: State transition table definition */
-#define NUM_STATES		10
-#define CHAR_CLASSES	8
+#define NUM_STATES		14
+#define CHAR_CLASSES	15
 
-/* TO_DO: Transition table - type of states defined in separate table */
+/* Transition table - type of states defined in separate table */
 static int transitionTable[NUM_STATES][CHAR_CLASSES] = {
-/*    [A-z],[0-9],    _,    &,   \', SEOF,    #, other
-	   L(0), D(1), U(2), M(3), Q(4), E(5), C(6),  O(7) */
-	{     1, ESNR, ESNR, ESNR,    4, ESWR,	  6, ESNR},	// S0: NOAS
-	{     1,    1,    1,    2,	  3,    3,   3,    3},	// S1: NOAS
-	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S2: ASNR (MVID)
-	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S3: ASWR (KEY)
-	{     4,    4,    4,    4,    5, ESWR,	  4,    4},	// S4: NOAS
-	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S5: ASNR (SL)
-	{     6,    6,    6,    6,    6, ESWR,	  7,    6},	// S6: NOAS
-	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S7: ASNR (COM)
-	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S8: ASNR (ES)
-	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS}  // S9: ASWR (ER)
-
+	// State  | [A-z] | [0-9]| _  |  (   |  ' | O   |  ) |    #  |  .  
+	/* S0 */ {     3,     8, ESNR, ESNR,    4, ESWR, ESNR,   ESNR,    10 }, // NOAS
+	/* S1 */ {     1,     1,    1,    1,    1,    1,    1,      2,     1 }, // NOAS
+	/* S2 */ {    FS,    FS,   FS,   FS,   FS,   FS,   FS,     FS,    FS }, // FSNR (COM)
+	/* S3 */ {     3,     3,    3,   13,    5,    5,    4,      5,     5 }, // NOAS
+	/* S4 */ {    FS,    FS,   FS,   FS,   FS,   FS,   FS,     FS,    FS }, // FSNR (MID)
+	/* S5 */ {    FS,    FS,   FS,   FS,   FS,   FS,   FS,     FS,    FS }, // FSWR (KEY/VAR)
+	/* S6 */ {     6,     6,    6,    6,    7,    6,    6,      6,     6 }, // NOAS
+	/* S7 */ {    FS,    FS,   FS,   FS,   FS,   FS,   FS,     FS,    FS }, // FSNR (SL)
+	/* S8 */ {     9,     8,    9,    9,    9,    9,    9,      9,    10 }, // NOAS
+	/* S9 */ {    FS,    FS,   FS,   FS,   FS,   FS,   FS,     FS,    FS }, // FSNR (IL)
+	/* S10 */{   ESNR,   11, ESNR, ESNR, ESNR, ESNR, ESNR,   ESNR,  ESNR }, // NOAS
+	/* S11 */{    12,    11,   12,   12,   12,   12,   12,     12,    12 }, // NOAS
+	/* S12 */{    FS,    11,   FS,   FS,   FS,   FS,   FS,     FS,    FS }, // FSNR (FL)
+	/* S13 */{    13,    13,   13,   13,   13, ESNR, ESNR,      4,  ESNR }, // NOAS
 };
+
 
 /* Define accepting states types */
 #define NOFS	0		/* not accepting state */
@@ -240,17 +243,20 @@ static int transitionTable[NUM_STATES][CHAR_CLASSES] = {
 
 /* TO_DO: Define list of acceptable states */
 static int stateType[NUM_STATES] = {
-	NOFS, /* S0: Start or other non-final states */
-	NOFS, /* S1: ... */
-	FSNR, /* S2: Final State, Method names (MID) - No retract */
-	FSNR, /* S3: Final State, Keywords (KEY) - No retract */
-	NOFS, /* S4: ... */
-	FSNR, /* S5: Final State, String literals (SL) - No retract */
-	NOFS, /* S6: ... */
-	FSNR, /* S7: Final State, Comments (COM) - No retract */
-	FSNR, /* S8: Final State, Error state 1 - No retract */
-	FSWR  /* S9: Final State, Error state 2 - With retract */
-	// Continue with the same logic for all states in your FSM
+	NOFS, /* S0: Start */
+	NOFS, /* S1: Identifier or keyword continuation */
+	FSNR, /* S2: Final State (Comment) */
+	NOFS, /* S3: Identifier continuation */
+	FSNR, /* S4: Final State (MID) */
+	FSWR, /* S5: Final State (Keyword/Variable) */
+	NOFS, /* S6: String literal continuation */
+	FSNR, /* S7: Final State (String Literal) */
+	NOFS, /* S8: Number continuation or start */
+	FSNR, /* S9: Final State (Integer Literal) */
+	NOFS, /* S10: Period or floating-point literal start */
+	NOFS, /* S11: Floating-point literal continuation */
+	FSNR, /* S12: Final State (Floating-Point Literal) */
+	NOFS  /* S13: Handling error or specific syntax */
 };
 
 
@@ -264,8 +270,8 @@ TO_DO: Adjust your functions'definitions
 int			startScanner(BufferPointer psc_buf);
 static int	nextClass(Cast_char c);					/* character class function */
 static int	nextState(int, Cast_char);		/* state machine function */
-Cast_void			printScannerData(ScannerData scData);
-Token				tokenizer(Cast_void);
+Cast_void   printScannerData(ScannerData scData);
+Token		tokenizer(Cast_void);
 
 /*
 -------------------------------------------------
@@ -290,19 +296,23 @@ Token funcErr	(str lexeme);
  * If you do not want to use the typedef, the equvalent declaration is:
  */
 
-/* TO_DO: Define final state table */
 static PTR_ACCFUN finalStateTable[NUM_STATES] = {
-	NULL,		/* -    [00] */
-	NULL,		/* -    [01] */
-	funcID,		/* MNID	[02] */
-	funcKEY,	/* KEY  [03] */
-	NULL,		/* -    [04] */
-	funcSL,		/* SL   [05] */
-	NULL,		/* -    [06] */
-	funcCMT,	/* COM  [07] */
-	funcErr,	/* ERR1 [06] */
-	funcErr		/* ERR2 [07] */
+	NULL,       /* S0: Initial state - [00] */
+	NULL,       /* S1: Identifier or keyword continuation - [01] */
+	funcCMT,    /* S2: Final State (Comment) - [02] */
+	NULL,       /* S3: Identifier continuation - [03] */
+	funcID,     /* S4: Final State (MID) - [04] */
+	funcKEY,    /* S5: Final State (Keyword/Variable) - [05] */
+	NULL,       /* S6: String literal continuation - [06] */
+	funcSL,     /* S7: Final State (String Literal) - [07] */
+	NULL,       /* S8: Number continuation or start - [08] */
+	funcIL,     /* S9: Final State (Integer Literal) - [09] */
+	NULL,       /* S10: Period or floating-point literal start - [10] */
+	funcFL,     /* S11: Floating-point literal continuation to final - [11] */
+	NULL,       /* S12: Unused in provided TT, assuming not a final state - [12] */
+	funcErr,    /* S13: Handling error or specific syntax - [13] */
 };
+
 
 /*
 -------------------------------------------------
