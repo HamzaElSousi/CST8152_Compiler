@@ -54,34 +54,28 @@
 #define VID_LEN 20  /* variable identifier length */
 #define ERR_LEN 40  /* error message length */
 #define NUM_LEN 5   /* maximum number of digits for IL */
-#define Symbole_TOKENS 10
 
 #define RTE_CODE 1  /* Value for run-time error */
 
 /* TO_DO: Define the number of tokens */
-#define NUM_TOKENS 16
+#define NUM_TOKENS 14
 
 /* TO_DO: Define Token codes - Create your token classes */
 enum TOKENS {
 	ERR_T,		/*  0: Error token */
-	MNID_T,		/*  1: Method name identifier token (_) */
-	IN_T,		/*  2: Integer literal token */
-	STRL_T,		/*  3: String literal token */
-	FL_T,       /*  4: Float  litreal toekn    */
-	LPR_T,	    /*  4: Left parenthesis token */
-	RPR_T,	    /*  5: Right parenthesis token */
-	LBR_T,	    /*  6: Left brace token */
-	RBR_T,	    /*  7: Right brace token */
-	NEWLINE_T,  /* 9: New line token */
+	MNID_T,		/*  1: Method name identifier token (start: &) */
+	INL_T,		/*  2: Integer literal token */
+	FLT_T,		/*   float literal token*/
+	STR_T,		/*  3: String literal token */
+	LPR_T,		/*  4: Left parenthesis token */
+	RPR_T,		/*  5: Right parenthesis token */
+	EOS_T,		/*  end of statement marked by end of line*/
 	KW_T,		/*  8: Keyword token */
 	RTE_T,		/* 10: Run-time error token */
 	SEOF_T,		/* 11: Source end-of-file token */
-	CMT_T,		/* 12: Comment token */
-	INDENT_T,   /* 7: Indentation increase token */
-	
-
-	
-
+	ARTH_T,
+	LOG_T,
+	CMT_T		/* 12: Comment token */
 };
 
 /* TO_DO: Define the list of keywords */
@@ -89,56 +83,24 @@ static str tokenStrTable[NUM_TOKENS] = {
 	"ERR_T",
 	"MNID_T",
 	"INL_T",
+	"FLT_T"
 	"STR_T",
-	 "FL_T",
 	"LPR_T",
 	"RPR_T",
-	"LBR_T",
-	"RBR_T",
-	"KW_T",
-	"NEWLINE_T",
+	"EOS_T",
+	"KW_T",	
 	"RTE_T",
 	"SEOF_T",
-	"CMT_T",
-	"INDENT_T",
-	
+	"ARTH_T",
+	"LOG_T",
+	"CMT_T"
 };
 
 /* TO_DO: Operators token attributes */
-typedef enum ArithmeticOperators {
-	OP_ADD, OP_SUB, OP_MUL, OP_DIV, OP_FLOOR_DIV, OP_MOD, OP_EXP
-} AriOperator;
-
-typedef enum RelationalOperators {
-	OP_EQ, OP_NE, OP_GT, OP_LT, OP_GE, OP_LE
-} RelOperator;
-
-typedef enum LogicalOperators {
-	OP_AND, OP_OR, OP_NOT
-} LogOperator;
-
-typedef enum BitwiseOperators {
-	OP_BITWISE_AND, OP_BITWISE_OR, OP_BITWISE_XOR, OP_BITWISE_NOT, OP_LSHIFT, OP_RSHIFT
-} BitwiseOperator;
-
-typedef enum AssignmentOperators {
-	OP_ASSIGN, OP_ADD_ASSIGN, OP_SUB_ASSIGN, OP_MUL_ASSIGN, OP_DIV_ASSIGN, OP_FLOOR_DIV_ASSIGN,
-	OP_MOD_ASSIGN, OP_EXP_ASSIGN, OP_BITWISE_AND_ASSIGN, OP_BITWISE_OR_ASSIGN,
-	OP_BITWISE_XOR_ASSIGN, OP_LSHIFT_ASSIGN, OP_RSHIFT_ASSIGN
-} AssignOperator;
-
-typedef enum MembershipOperators {
-	OP_IN, OP_NOT_IN
-} MembershipOperator;
-
-typedef enum IdentityOperators {
-	OP_IS, OP_IS_NOT
-} IdentityOperator;
-
-typedef enum SourceEndOfFile {
-	SEOF_0, SEOF_255
-} EofOperator;
-
+typedef enum ArithmeticOperators { OP_ADD, OP_SUB, OP_MUL, OP_DIV } AriOperator;
+typedef enum RelationalOperators { OP_EQ, OP_NE, OP_GT, OP_LT } RelOperator;
+typedef enum LogicalOperators { OP_AND, OP_OR, OP_NOT } LogOperator;
+typedef enum SourceEndOfFile { SEOF_0, SEOF_255 } EofOperator;
 
 /* TO_DO: Data structures for declaring the token and its attributes */
 typedef union TokenAttribute {
@@ -160,8 +122,8 @@ typedef struct idAttibutes {
 	Cast_byte flags;			/* Flags information */
 	union {
 		int intValue;				/* Integer value */
-		Cast_double floatValue;			/* Float value */
-		str stringContent;		/* String value */
+		float floatValue;			/* Float value */
+		str* stringContent;		/* String value */
 	} values;
 } IdAttibutes;
 
@@ -188,62 +150,76 @@ typedef struct scannerData {
 
 /* TO_DO: Define lexeme FIXED classes */
 /* These constants will be used on nextClass */
-#define CHRCOL2 '('
-#define CHRCOL3 ')'
-#define CHRCOL4 '\''
-#define CHRCOL5 '_'
-#define CHRCOL6 '#'
+#define CHRCOL2 '_'
+#define CHRCOL3 '#'
+#define CHRCOL4 '\"'
+#define CHRCOL5 '.'
+#define CHRCOL6 '('
+#define CHRCOL7 '\n'
 
 /* These constants will be used on VID / MID function */
-#define MNID_SUF '_'
+#define MNID_SUF '('
 #define COMM_SYM '#'
 
 /* TO_DO: Error states and illegal state */
-#define ESNR	8		/* Error state with no retract */
-#define ESWR	9		/* Error state with retract */
-#define FS		10		/* Illegal state */
+#define ESNR	16		/* Error state with no retract */
+#define ESWR	17		/* Error state with retract */
+#define FS		18		/* Illegal state */
+
+/* Define accepting states types */
+#define NOFS	19		/* not accepting state */
+#define FSNR	20		/* accepting state with no retract */
+#define FSWR	21		/* accepting state with retract */
 
  /* TO_DO: State transition table definition */
-#define NUM_STATES		10
-#define CHAR_CLASSES	8
+#define NUM_STATES		17
+#define CHAR_CLASSES	10
+
+
 
 /* TO_DO: Transition table - type of states defined in separate table */
 static int transitionTable[NUM_STATES][CHAR_CLASSES] = {
-/*    [A-z],[0-9],    _,    &,   \', SEOF,    #, other
-	   L(0), D(1), U(2), M(3), Q(4), E(5), C(6),  O(7) */
-	{     1, ESNR, ESNR, ESNR,    4, ESWR,	  6, ESNR},	// S0: NOAS
-	{     1,    1,    1,    2,	  3,    3,   3,    3},	// S1: NOAS
-	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S2: ASNR (MVID)
-	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S3: ASWR (KEY)
-	{     4,    4,    4,    4,    5, ESWR,	  4,    4},	// S4: NOAS
-	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S5: ASNR (SL)
-	{     6,    6,    6,    6,    6, ESWR,	  7,    6},	// S6: NOAS
-	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S7: ASNR (COM)
-	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS},	// S8: ASNR (ES)
-	{    FS,   FS,   FS,   FS,   FS,   FS,	 FS,   FS}  // S9: ASWR (ER)
-
+/*    [A-z],[0-9],    _,    #,   \",    .,    (,    \n	   EOF		Other
+	   L(0), D(1), U(2), H(3), Q(4), P(5), B1X(6) N(7)     EOF		O		*/	
+	{     1,	8, ESNR,   14,    6,   12,	ESNR, ESNR,	 FSNR,		ESNR},	    // S0: start
+	{     1,    2,    2, FSWR, FSWR,    3,    4,     3,	    2,		   3},		// S1: start with a letter
+	{     2,    2,    2, FSWR, FSWR, FSWR,	  4,     3,	    3, 	       3},		// S2: variable name or function name
+	{  FSNR, FSNR, FSNR, FSNR, FSNR, FSNR, FSNR,  FSNR,	 FSNR,		FSNR},		// S3: variable name final state
+	{  FSNR, FSNR, FSNR, FSNR, FSNR, FSNR, FSNR,  FSNR,	 FSNR,		FSNR},		// S4: function name final state
+	{  FSNR, FSNR, FSNR, FSNR, FSNR, FSNR, FSNR,  FSNR,	 FSNR,	 	FSNR},		// S5: keyword final state
+	{     6,    6,    6,    6,    7,    6,	  6,     6,   ESNR,		   6},		// S6: looping to fill string
+	{  FSNR, FSNR, FSNR, FSNR, FSNR, FSNR, FSNR,  FSNR,	 FSNR,		FSNR},		// S7: string final state
+	{    10,    8,   10,   10,   10,    9,	 10,    10,	   10,		  10},		// S8: got a digit, either int or float
+	{    11,	9,	 11,   11,   11,   11,   11,    11,	   11,		  11},		// S9: got a period, float starting with a number
+	{  FSNR, FSNR, FSNR, FSNR, FSNR, FSNR, FSNR,  FSNR,	 FSNR,		FSNR},		// S10: Integer final state
+	{  FSNR, FSNR, FSNR, FSNR, FSNR, FSNR, FSNR,  FSNR,	 FSNR,		FSNR},		// S11: Float final state
+	{  ESNR,   12, ESNR, ESNR, ESNR, ESNR, ESNR,    11,  ESNR,		ESNR},		// S12: float that starts with a .
+	{	 11,   13,   11,   11,   11,   11,   11,    11,	 FSNR,		  11},		// S13: looping for float that starts with a .
+	{	 14,   14,   14,   14,   14,   14,   14,    15,	 FSNR,		  14},		// S14: looping for Comment
+	{  FSNR, FSNR, FSNR, FSNR, FSNR, FSNR, FSNR,  FSNR,	 FSNR,	    FSNR},		// S15: Comment end state
+    
 };
 
-/* Define accepting states types */
-#define NOFS	0		/* not accepting state */
-#define FSNR	1		/* accepting state with no retract */
-#define FSWR	2		/* accepting state with retract */
 
 /* TO_DO: Define list of acceptable states */
 static int stateType[NUM_STATES] = {
-	NOFS, /* S0: Start or other non-final states */
-	NOFS, /* S1: ... */
-	FSNR, /* S2: Final State, Method names (MID) - No retract */
-	FSNR, /* S3: Final State, Keywords (KEY) - No retract */
-	NOFS, /* S4: ... */
-	FSNR, /* S5: Final State, String literals (SL) - No retract */
-	NOFS, /* S6: ... */
-	FSNR, /* S7: Final State, Comments (COM) - No retract */
-	FSNR, /* S8: Final State, Error state 1 - No retract */
-	FSWR  /* S9: Final State, Error state 2 - With retract */
-	// Continue with the same logic for all states in your FSM
+	NOFS, /* 00 */
+	NOFS, /* 01 */
+	NOFS, /* 02*/
+	FSNR, /* 03 Variable name */
+	FSNR, /* 04 function name */
+	FSNR, /* 05 keyword */
+	NOFS, /* 06*/
+	FSNR, /* 07 String */
+	NOFS, /* 08 */
+	NOFS, /* 09 */
+	FSNR, /* 10 Integer */
+	FSNR, /* 11 Float */
+	NOFS, /* 12 */
+	NOFS, /* 13 */
+	NOFS, /* 14*/
+	FSNR, /* 15 Comment */
 };
-
 
 /*
 -------------------------------------------------
@@ -255,8 +231,8 @@ TO_DO: Adjust your functions'definitions
 int			startScanner(BufferPointer psc_buf);
 static int	nextClass(Cast_char c);					/* character class function */
 static int	nextState(int, Cast_char);		/* state machine function */
-Cast_void			printScannerData(ScannerData scData);
-Token				tokenizer(Cast_void);
+void			printScannerData(ScannerData scData);
+Token				tokenizer(void);
 
 /*
 -------------------------------------------------
@@ -265,13 +241,14 @@ Automata definitions
 */
 
 /* TO_DO: Pointer to function (of one char * argument) returning Token */
-typedef Token(*PTR_ACCFUN)(str lexeme);
+typedef Token(*PTR_ACCFUN)(str* lexeme);
 
 /* Declare accepting states functions */
 Token funcSL	(str lexeme);
 Token funcIL	(str lexeme);
+Token funcVAR   (str lexeme);
+Token funcFLT	(str lexeme);
 Token funcID	(str lexeme);
-Token funcFL    (str lexeme);
 Token funcCMT   (str lexeme);
 Token funcKEY	(str lexeme);
 Token funcErr	(str lexeme);
@@ -282,17 +259,25 @@ Token funcErr	(str lexeme);
  */
 
 /* TO_DO: Define final state table */
-static PTR_ACCFUN finalStateTable[NUM_STATES] = {
+static PTR_ACCFUN finalStateTable[NUM_STATES ] = {
 	NULL,		/* -    [00] */
 	NULL,		/* -    [01] */
-	funcID,		/* MNID	[02] */
-	funcKEY,	/* KEY  [03] */
-	NULL,		/* -    [04] */
-	funcSL,		/* SL   [05] */
+	NULL,		/* -    [02] */
+	funcVAR,	/* -    [03] */
+	funcID,		/* MNID	[04] */
+	funcKEY,	/* KEY  [05] */
 	NULL,		/* -    [06] */
-	funcCMT,	/* COM  [07] */
-	funcErr,	/* ERR1 [06] */
-	funcErr		/* ERR2 [07] */
+	funcSL,		/* SL   [07] */
+	NULL,		/* -    [08] */
+	NULL,		/* -    [09] */
+	funcIL,		/* -    [10] */
+	funcFLT,	/* -    [11] */
+	NULL,		/* -    [12] */
+	NULL,		/* -    [13] */
+	NULL,		/* -    [14] */
+	funcCMT,	/* COM  [15] */
+	funcErr
+
 };
 
 /*
@@ -302,30 +287,21 @@ Language keywords
 */
 
 /* TO_DO: Define the number of Keywords from the language */
+#define KWT_SIZE 10
 
-#define KWT_SIZE 16
-
+/* TO_DO: Define the list of keywords */
 static str keywordTable[KWT_SIZE] = {
-	"def",      // KW00 - Defines a function
-	"class",    // KW01 - Defines a class
-	"if",       // KW02 - Conditional statement
-	"else",     // KW03 - Alternative branch in conditional statements
-	"elif",     // KW04 - Else if branch in conditional statements
-	"for",      // KW05 - For loop
-	"while",    // KW06 - While loop
-	"return",   // KW07 - Returns a value from a function
-	"import",   // KW08 - Imports a module
-	"in",       // KW09 - Membership test operations
-	"break",    // KW10 - Breaks out of the current loop
-	"continue", // KW11 - Continues to the next iteration of the loop
-	"pass",     // KW12 - Null operation, nothing happens when it executes
-	"True",     // KW13 - Boolean True
-	"False",    // KW14 - Boolean False
-	"None",     // KW15 - Represents the absence of a value or a null value
+	"if",		/* KW00 */
+	"elif",		/* KW01 */
+	"for",		/* KW02 */
+	"while",	/* KW03 */
+	"class",	/* KW04 */
+	"return",	/* KW05 */
+	"break",	/* KW06 */
+	"continue",	/* KW07 */
+	"def",		/* KW08 */
+	"import"	/* KW09 */
 };
-
-
-
 
 /* NEW SECTION: About indentation */
 
@@ -335,7 +311,7 @@ static str keywordTable[KWT_SIZE] = {
 
 #define INDENT '\t'  /* Tabulation */
 
-/* TO_DO: Should be used if no symbol table is implemented */;
+/* TO_DO: Should be used if no symbol table is implemented */
 typedef struct languageAttributes {
 	Cast_char indentationCharType;
 	int indentationCurrentPos;
