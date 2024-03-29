@@ -142,7 +142,7 @@ BufferPointer readerCreate(int size, int increment, int mode) {
 *************************************************************
 */
 
-BufferPointer readerAddChar(BufferPointer const readerPointer, char ch) {
+BufferPointer readerAddChar(BufferPointer const readerPointer, Cast_char ch) {
 	str tempReader = NULL;
 	int newSize = 0;
 	/* TO_DO done: Defensive programming */
@@ -158,7 +158,7 @@ BufferPointer readerAddChar(BufferPointer const readerPointer, char ch) {
 	}
 
 
-	if (readerPointer->position.wrte * (int)sizeof(char) < readerPointer->size) {
+	if (readerPointer->position.wrte * (int)sizeof(Cast_char) < readerPointer->size) {
 		/* Buffer is NOT full */
 	}
 	else {
@@ -196,7 +196,7 @@ BufferPointer readerAddChar(BufferPointer const readerPointer, char ch) {
 		}
 
 		/* New reader allocation */
-		tempReader = (str)realloc(readerPointer->content, newSize * sizeof(char));
+		tempReader = (str)realloc(readerPointer->content, newSize * sizeof(Cast_char));
 		/* TO_DO done: Defensive programming */
 		if (!tempReader) {
 			printf("memory allocation for newSize failed in readerAddChar\n");
@@ -372,7 +372,7 @@ Cast_boln readerSetMark(BufferPointer const readerPointer, int mark) {
 */
 int readerPrint(BufferPointer const readerPointer) {
 	int cont = 0;
-	char c;
+	Cast_char c;
 	/* TO_DO: Defensive programming (including invalid chars) */
 	while (cont < readerPointer->position.wrte) {
 		/* TO_DO: Check flag if buffer EOB has achieved */
@@ -407,7 +407,7 @@ int readerPrint(BufferPointer const readerPointer) {
 */
 int readerLoad(BufferPointer const readerPointer, FILE* const fileDescriptor) {
 	int size = 0;
-	char c;
+	Cast_char c;
 
 	/* TO_DO: Defensive programming */
 	if (readerPointer == NULL) {
@@ -421,14 +421,14 @@ int readerLoad(BufferPointer const readerPointer, FILE* const fileDescriptor) {
 		printf("Invalid fileDescriptor in readerLoad\n");
 		return READER_ERROR;
 	}
-	c = (char)fgetc(fileDescriptor);
+	c = (Cast_char)fgetc(fileDescriptor);
 	while (!feof(fileDescriptor)) {
 		if (!readerAddChar(readerPointer, c)) {
 			ungetc(c, fileDescriptor);
 			/* TO_DO done: Handle readerAddChar error */
 			return READER_ERROR;
 		}
-		c = (char)fgetc(fileDescriptor);
+		c = (Cast_char)fgetc(fileDescriptor);
 		size++;
 	}
 
