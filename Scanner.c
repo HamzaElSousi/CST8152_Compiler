@@ -40,6 +40,7 @@
   */
 #define _CRT_SECURE_NO_WARNINGS
 
+#include "Scanner.h" /* Scanner.h*/
 #include <stdio.h>   /* standard input / output */
 #include <ctype.h>   /* conversion functions */
 #include <stdlib.h>  /* standard library functions and constants */
@@ -94,6 +95,7 @@ static BufferPointer sourceBuffer;			/* Pointer to input source buffer */
  /* TO_DO: Follow the standard and adjust datatypes */
 
 int startScanner(BufferPointer psc_buf) {
+	if (!psc_buf) return EXIT_FAILURE;
 	/* TO_DO: Start histogram */
 	for (int i=0; i<NUM_TOKENS;i++)
 		scData.scanHistogram[i] = 0;
@@ -146,6 +148,7 @@ Token tokenizer(Cast_void) {
 		switch (c) {
 
 		/* Cases for spaces */
+
 		case ' ':
 		case '\t':
 		case '\f':
@@ -184,17 +187,17 @@ Token tokenizer(Cast_void) {
 			return currentToken;
 		
 		case '>':
-			currentToken.code = LOG_T;
+			currentToken.code = LOG_OP_T;
 			scData.scanHistogram[currentToken.code]++;
 			return currentToken;
 
 		case '<':
-			currentToken.code = LOG_T;
+			currentToken.code = LOG_OP_T;
 			scData.scanHistogram[currentToken.code]++;
 			return currentToken;
 
 		case '!':
-			currentToken.code = LOG_T;
+			currentToken.code = LOG_OP_T;
 			scData.scanHistogram[currentToken.code]++;
 			return currentToken;
 		/* Cases for END OF FILE */
@@ -560,6 +563,15 @@ Token funcKEY(str lexeme) {
 }
 
 
+
+Token funcLOG_OP(str lexeme) {
+	Token t = { 0 };
+	t.code = LOG_OP_T;
+	// Additional logic for handling logical operators
+	return t;
+}
+
+
 /*
 ************************************************************
  * Acceptance State Function Error
@@ -656,8 +668,8 @@ Cast_void printToken(Token t) {
 		printf("ARTH_T");
 		break;
 	
-	case LOG_T:
-		printf("LOG_T");
+	case LOG_OP_T:
+		printf("LOG_OP_T");
 		break;	
 	
 	case CMT_T:

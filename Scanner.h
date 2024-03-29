@@ -31,6 +31,13 @@
 * Function list: (...).
 *************************************************************/
 
+#ifndef SCANNER_H_
+#define SCANNER_H_
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #ifndef COMPILERS_H_
 #include "Compilers.h"
 #endif
@@ -39,8 +46,6 @@
 #include "Reader.h"
 #endif
 
-#ifndef SCANNER_H_
-#define SCANNER_H_
 
 #ifndef NULL
 #include <_null.h> /* NULL pointer constant is defined there */
@@ -58,7 +63,7 @@
 #define RTE_CODE 1  /* Value for run-time error */
 
 /* TO_DO: Define the number of tokens */
-#define NUM_TOKENS 14
+#define NUM_TOKENS 16
 
 /* TO_DO: Define Token codes - Create your token classes */
 enum TOKENS {
@@ -73,10 +78,15 @@ enum TOKENS {
 	KW_T,		/*  8: Keyword token */
 	RTE_T,		/* 10: Run-time error token */
 	SEOF_T,		/* 11: Source end-of-file token */
-	ARTH_T,
-	LOG_T,
-	CMT_T		/* 12: Comment token */
+	CMT_T,		/* 12: Comment token */
+	LOG_OP_T,   /* Logical operators : &&, || , ! */
+	REL_OP_T,	/* Relational operators: ==, !=, >, <, >=, <= */
+	ASSIGN_OP_T,/* Assignment operators: =, +=, -=, */
+	ARTH_T, // Arithmetic operations token
+	//LOG_T,  // Logical operations token
+	//NUM_TOKENS
 };
+
 
 /* TO_DO: Define the list of keywords */
 static str tokenStrTable[NUM_TOKENS] = {
@@ -92,8 +102,11 @@ static str tokenStrTable[NUM_TOKENS] = {
 	"RTE_T",
 	"SEOF_T",
 	"ARTH_T",
-	"LOG_T",
-	"CMT_T"
+	"LOG_OP_T",
+	"CMT_T",
+	"LOG_OP_T",   /* Logical operators : &&, || , ! */
+	"REL_OP_T",	  /* Relational operators: ==, !=, >, <, >=, <= */
+	"ASSIGN_OP_T" /* Assignment operators: =, +=, -=, */
 };
 
 /* TO_DO: Operators token attributes */
@@ -172,7 +185,7 @@ typedef struct scannerData {
 #define FSWR	21		/* accepting state with retract */
 
  /* TO_DO: State transition table definition */
-#define NUM_STATES		17
+#define NUM_STATES		18
 #define CHAR_CLASSES	10
 
 
@@ -241,7 +254,8 @@ Automata definitions
 */
 
 /* TO_DO: Pointer to function (of one char * argument) returning Token */
-typedef Token(*PTR_ACCFUN)(str* lexeme);
+typedef Token(*PTR_ACCFUN)(str lexeme);
+
 
 /* Declare accepting states functions */
 Token funcSL	(str lexeme);
@@ -252,6 +266,8 @@ Token funcID	(str lexeme);
 Token funcCMT   (str lexeme);
 Token funcKEY	(str lexeme);
 Token funcErr	(str lexeme);
+Token funcLOG_OP (str lexeme);
+
 
 /* 
  * Accepting function (action) callback table (array) definition 
@@ -276,7 +292,8 @@ static PTR_ACCFUN finalStateTable[NUM_STATES ] = {
 	NULL,		/* -    [13] */
 	NULL,		/* -    [14] */
 	funcCMT,	/* COM  [15] */
-	funcErr
+	funcErr,
+	funcLOG_OP // Assuming this is the correct state for a logical operator
 
 };
 
@@ -324,4 +341,5 @@ int numScannerErrors;
 /* Scanner data */
 ScannerData scData;
 
-#endif
+
+#endif // SCANNER_H_

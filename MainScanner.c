@@ -93,9 +93,9 @@ extern Token tokenizer(Cast_void);
  *  Function declarations
  * -------------------------------------------------------------
  */
-Cast_void printScannerError(str* fmt, ...);
+Cast_void printScannerError(str fmt, ...);
 Cast_void displayScanner(BufferPointer ptrBuffer);
-Cast_long getScannerFilesize(str* fname);
+Cast_long getScannerFilesize(str fname);
 Cast_void printToken(Token t);
 
 /*
@@ -211,7 +211,7 @@ int mainScanner(int argc, str* argv) {
 ***********************************************************
 */
 
-Cast_void printScannerError(str* fmt, ...) {
+Cast_void printScannerError(str fmt, ...) {
 	va_list ap;
 	va_start(ap, fmt);
 	(Cast_void)vfprintf(stderr, fmt, ap);
@@ -248,7 +248,7 @@ Cast_void displayScanner(BufferPointer ptrBuffer) {
  ***********************************************************
  */
 
-Cast_long getScannerFilesize(str* fname) {
+Cast_long getScannerFilesize(str fname) {
 	FILE* fileInput;
 	Cast_long fileLength;
 	fileInput = fopen(fname, "r");
