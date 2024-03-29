@@ -245,7 +245,7 @@ int			startScanner(BufferPointer psc_buf);
 static int	nextClass(Cast_char c);					/* character class function */
 static int	nextState(int, Cast_char);		/* state machine function */
 void			printScannerData(ScannerData scData);
-Token				tokenizer(void);
+Token				tokenizer(Cast_void);
 
 /*
 -------------------------------------------------

@@ -186,13 +186,23 @@ Token tokenizer(Cast_void) {
 			scData.scanHistogram[currentToken.code]++;
 			return currentToken;
 		
+		case '/':
+			currentToken.code = ARTH_T;
+			scData.scanHistogram[currentToken.code]++;
+			return currentToken;
+		
+		case '%':
+			currentToken.code = ARTH_T;
+			scData.scanHistogram[currentToken.code]++;
+			return currentToken;
+		
 		case '>':
-			currentToken.code = LOG_OP_T;
+			currentToken.code = REL_OP_T;
 			scData.scanHistogram[currentToken.code]++;
 			return currentToken;
 
 		case '<':
-			currentToken.code = LOG_OP_T;
+			currentToken.code = REL_OP_T;
 			scData.scanHistogram[currentToken.code]++;
 			return currentToken;
 
