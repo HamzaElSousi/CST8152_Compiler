@@ -118,7 +118,8 @@ typedef struct bufferReader {
 /* FUNCTIONS DECLARATION:  .................................. */
 /* General Operations */
 BufferPointer	readerCreate(int, int, int);
-BufferPointer	readerAddChar(BufferPointer const, Cast_char ch);
+//BufferPointer	readerAddChar(BufferPointer const, Cast_char ch);
+BufferPointer readerAddChar(BufferPointer const readerPointer, Cast_char ch);
 Cast_boln		readerClear(BufferPointer const);
 Cast_boln		readerFree(BufferPointer const);
 Cast_boln		readerIsFull(BufferPointer const);
