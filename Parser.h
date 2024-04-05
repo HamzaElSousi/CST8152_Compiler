@@ -63,13 +63,14 @@ static int		syntaxErrorNumber = 0;
 
 #define LANG_WRTE		"print&"
 #define LANG_READ		"input&"
-#define LANG_MAIN		"main&"
+#define LANG_MAIN		"main()"
 
 /* TO_DO: Create ALL constants for keywords (sequence given in table.h) */
 
 /* Constants */
 enum KEYWORDS {
 	NO_ATTR = -1,
+	KW_def,   // added
 	KW_data,
 	KW_code,
 	KW_int,
@@ -79,7 +80,8 @@ enum KEYWORDS {
 	KW_then,
 	KW_else,
 	KW_while,
-	KW_do
+	KW_do,
+	KW_import, // added
 };
 
 /* TO_DO: Define the number of BNF rules */
