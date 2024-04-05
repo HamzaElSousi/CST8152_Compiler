@@ -63,7 +63,7 @@
 #define RTE_CODE 1  /* Value for run-time error */
 
 /* TO_DO: Define the number of tokens */
-#define NUM_TOKENS 16
+#define NUM_TOKENS 18
 
 /* TO_DO: Define Token codes - Create your token classes */
 enum TOKENS {
@@ -83,6 +83,8 @@ enum TOKENS {
 	REL_OP_T,	/* Relational operators: ==, !=, >, <, >=, <= */
 	ASSIGN_OP_T,/* Assignment operators: =, +=, -=, */
 	ARTH_T, // Arithmetic operations token
+	LBR_T,		/* Left Bracket token */
+	RBR_T		/* Right Bracket token */
 	//LOG_T,  // Logical operations token
 	//NUM_TOKENS
 };
